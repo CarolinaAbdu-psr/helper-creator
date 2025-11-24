@@ -1,0 +1,11 @@
+langchain_core
+langchain_openai
+langchain_anthropic
+langchain_chroma
+langgraph
+langchain_text_splitters
+chromadb
+dotenv
+langchain_core
+langchain_community
+jq
