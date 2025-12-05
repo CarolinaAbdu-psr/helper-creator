@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "natural_request": "Create a case with thermal plants",
+    "correct_code": {
+      "instruction": "To create a thermal plant a fuel and a system must be created before",
+      "code": "CREATE_STUDY \n CREATE System \n SET code: 1 \n SET name : System1 \n ADD System \n \n CREATE Fuel \n SET code: 1 \n SET name: 'gas' \n SET RefSystem : 1 \n ADD Fuel \n \n  CREATE ThermalPLant \n SET code: 1 \n SET name: ThermalGas1 \n SET RefSystem: 1 \n SET RefFuel: 1 \n SET \n ADD ThermalPlant\n\nSAVE_STUDY" },
+    "incorrect_code": {
+      "error": "The ThermalPlant can be created without a Fuel and a System",
+      "code": "CREATE_STUDY \n CREATE ThermalPLant \n SET code: 1 \n SET name: ThermalGas1 \n SET RefSystem: 1 \n SET RefFuel: 1 \n SET \n ADD ThermalPlant"
+    }
+  },
+  {
+    "id": 2,
+    "natural_request": "Create a hydroelectric plant with a reservoir",
+    "correct_code": {
+      "instruction": "To create a hydroelectric plant, a system and a station must be created first",
+      "code": "CREATE_STUDY\nCREATE System\nSET code: 1\nSET name: System1\nADD System\n\nCREATE HyudroStation\nSET code: 1\nSET name: Station1\nSET RefSystem: 1\nADD HydroStation\n\nCREATE HydroPlant\nSET code: 1\nSET name: Hydro1\nSET RefSystem: 1\nSET RefStation: 1\nSET InstalledCapacity: 500\nADD HydroPlant\nSAVE_STUDY"
+    },
+    "incorrect_code": {
+      "error": "The HydroPlant references a station that doesn't exist",
+      "code": "CREATE_STUDY\nCREATE System\nSET code: 1\nSET name: System1\nADD System\n\nCREATE HydroPlant\nSET code: 1\nSET name: Hydro1\nSET RefSystem: 1\nSET RefStation: 1\nSET installedCapacity: 500\nADD HydroPlant\nSAVE_STUDY"
+    }
+  },
+  {
+    "id": 3,
+    "natural_request": "Create a Interconnection connecting two systems",
+    "correct_code": {
+      "instruction": "To create a interconnection, both origin and destination systems must exist first",
+      "code": "CREATE_STUDY\nCREATE System\nSET code: 1\nSET name: System1\nADD System\n\nCREATE System\nSET code: 2\nSET name: System2\nADD System\n\nCREATE Interconnectiopn\nSET code: 1\nSET name: Line1-2\nSET RefSystems: [1, 2] \nSET CapacityFromTo: 300\nADD Interconnectiopn\nSAVE_STUDY"
+    },
+    "incorrect_code": {
+      "error": "The Interconnection references System2 which hasn't been created",
+      "code": "CREATE_STUDY\nCREATE System\nSET code: 1\nSET name: System1\nADD System\n\nCREATE Interconnection\nSET code: 1\nSET name: Line1-2\nSET RefSystemFrom: 1\nSET RefSystemTo: 2\nSET capacity: 300\nADD Interconnection\nSAVE_STUDY"
+    }
+  }
+]

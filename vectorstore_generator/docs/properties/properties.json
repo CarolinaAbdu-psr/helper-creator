@@ -1,0 +1,2351 @@
+[
+    {
+        "id": 0,
+        "object": "ACInterconnection : Models 2-terminal DC links. ",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "RefBuses"
+            ],
+            "static_properties": [
+                "Currency",
+                "FlagQuadraticLoss",
+                "MeteringEnd",
+                "ReserveMargin",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "EmergencyCapacityFromTo",
+                "EmergencyCapacityToFrom",
+                "CapacityFromTo",
+                "CapacityToFrom",
+                "Decommissioned",
+                "Type",
+                "LossFactorFromTo",
+                "LossFactorToFrom",
+                "MaintenanceType",
+                "MaintenanceValue",
+                "Resistance",
+                "ReactivePowerFactorFrom",
+                "TerminalPowerFactorTo",
+                "OperativeState",
+                "WheelingCostFromTo",
+                "WheelingCostToFrom"
+            ]
+        }
+    },
+    {
+        "id": 1,
+        "object": "Area : Defines control areas and power exchanges between them",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": [
+                "MaximumLimit",
+                "MinimumLimit"
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "object": "Battery : Models battery systems",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "ControlledBus",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "RefSystem",
+                "RefBus"
+            ],
+            "static_properties": [
+                "ChargeRamp",
+                "ControlledBus",
+                "DevOpt",
+                "DischargeRamp",
+                "InitialStorage",
+                "EnergiaFirmeUnit",
+                "InterStageDependency",
+                "MaintenanceType",
+                "MaintenanceUnit",
+                "MaxSecondaryReserveUnit",
+                "O&MType",
+                "PotenciaFirmeUnit",
+                "ReactivePowerControlType",
+                "MaximumRegulationTime",
+                "RegulationType",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "Unit",
+                "RefSystem",
+                "RefBus"
+            ],
+            "dynamic_properties": [
+                "ChargeEfficiency",
+                "DischargeEfficiency",
+                "MaximumStorage",
+                "MinimumStorage",
+                "EnergiaFirme",
+                "Type",
+                "GenDev",
+                "Maintenance",
+                "MaintenanceValue",
+                "MaxDev",
+                "MaxReactivePower",
+                "MaxSecondaryPerReserve",
+                "MaximumReserve",
+                "MinReactivePower",
+                "O&MCost",
+                "MaximumCapacity",
+                "PotenciaFirme",
+                "PriceSecondaryPerReserve",
+                "BidPrice",
+                "ReactivePowerFactor",
+                "SingleReserve"
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "object": "Bus : Represents electrical buses",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefSystem",
+                "RefArea",
+                "RefZone"
+            ],
+            "static_properties": [
+                "Agr",
+                "BaseVoltage",
+                "ControleType",
+                "LoadShedding",
+                "Monitoring",
+                "InitialDate",
+                "IsFictitious",
+                "Latitude",
+                "Longitude",
+                "Owner",
+                "OwnerShare",
+                "RefSystem",
+                "RefArea",
+                "RefZone"
+            ],
+            "dynamic_properties": [
+                "EmergencyMaximumVoltage",
+                "EmergencyMinimumVoltage",
+                "MaximumVoltage",
+                "MinimumVoltage",
+                "Voltage"
+            ]
+        }
+    },
+    {
+        "id": 4,
+        "object": "BusShunt : Represents electrical bus shunt",
+        "properties": {
+            "mandatory": [
+                "RefBus"
+            ],
+            "references_objects": [
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "ControlType",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "Susceptance",
+                "Decommissioned",
+                "Type",
+                "Conductance",
+                "NumberOfUnits",
+                "UnitsInService"
+            ]
+        }
+    },
+    {
+        "id": 5,
+        "object": "Circuit : Represents transmission circuit (replaced by TransmissionLine object",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefBuses"
+            ],
+            "static_properties": [
+                "CircuitType",
+                "Currency",
+                "Contingency",
+                "Monitored",
+                "OutageSampling",
+                "FlagTariff",
+                "HasMaxSecondaryReserve",
+                "HasPriceSecondaryReserve",
+                "Length",
+                "MaxSecondaryReserveUnit",
+                "MeteringEnd",
+                "Owner",
+                "OwnerShare",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "Susceptance",
+                "CostFromTo",
+                "CostToFrom",
+                "Decommissioned",
+                "Type",
+                "MaxSecondaryReserve",
+                "PriceSecondaryReserve",
+                "OutageProbability",
+                "Resistance",
+                "EmergencyRating",
+                "NormalRating",
+                "OperativeState",
+                "Reactance"
+            ]
+        }
+    },
+    {
+        "id": 6,
+        "object": "CircuitFlowConstraint : Adds circuit flow constraints",
+        "properties": {
+            "mandatory": [
+                "RefCircuits"
+            ],
+            "references_objects": [
+                "RefCircuits"
+            ],
+            "static_properties": [
+                "RefCircuits"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 7,
+        "object": "CSP : Models Concentrated Solar Power plants",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "ControlledBus",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "RefSystem",
+                "RefGenerators"
+            ],
+            "static_properties": [
+                "ControlledBus",
+                "DevOpt",
+                "EnergiaFirmeUnit",
+                "Latitude",
+                "Longitude",
+                "MaxSecondaryReserveUnit",
+                "PotenciaFirmeUnit",
+                "ReactivePowerControlType",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "RefSystem",
+                "RefGenerators"
+            ],
+            "dynamic_properties": [
+                "Efficiency",
+                "EnergiaFirme",
+                "Type",
+                "GenDev",
+                "Generation",
+                "HourGeneration",
+                "MaxDev",
+                "MaxReactivePower",
+                "MaxSecondaryPerReserve",
+                "MaximumReserve",
+                "MinimumGeneration",
+                "MinReactivePower",
+                "InstalledCapacity",
+                "PotenciaFirme",
+                "PriceSecondaryPerReserve",
+                "BidPrice",
+                "ReactivePowerFactor",
+                "SM",
+                "Units",
+                "MaximumStorage"
+            ]
+        }
+    },
+    {
+        "id": 8,
+        "object": "DCBus : Represents DC buses",
+        "properties": {
+            "mandatory": [
+                "RefLink",
+                "RefSystem",
+                "RefArea"
+            ],
+            "references_objects": [
+                "RefLink",
+                "RefSystem",
+                "RefArea",
+                "RefZone"
+            ],
+            "static_properties": [
+                "BaseVoltage",
+                "ControlType",
+                "GroundResistance",
+                "Latitude",
+                "Longitude",
+                "Polarity",
+                "RefLink",
+                "RefSystem",
+                "RefArea",
+                "RefZone"
+            ],
+            "dynamic_properties": [
+                "Voltage"
+            ]
+        }
+    },
+    {
+        "id": 9,
+        "object": "DCLine : Models DC lines",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "RefBuses"
+            ],
+            "static_properties": [
+                "Length",
+                "MeteringEnd",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "Decommissioned",
+                "Type",
+                "Inductance",
+                "OutageProbability",
+                "Resistance",
+                "EmergencyRating",
+                "NormalRating",
+                "OperativeState"
+            ]
+        }
+    },
+    {
+        "id": 10,
+        "object": "Demand : Configures energy demand (linked with Demand Segments)",
+        "properties": {
+            "mandatory": [
+                "RefSystem",
+                "RefSegments"
+            ],
+            "references_objects": [
+                "RefSystem",
+                "RefSegments"
+            ],
+            "static_properties": [
+                "LoadCurtailmentCost",
+                "Disabled",
+                "LoadBlockDuration",
+                "FirstLevelType",
+                "IsFlexible",
+                "MaximumLoadCurtailment",
+                "MaximumLoadDecrease",
+                "MaximumLoadIncrease",
+                "EnergyResolution",
+                "ShiftingWindow",
+                "RefSystem",
+                "RefSegments"
+            ],
+            "dynamic_properties": [
+                "DemandVariationCoefficient",
+                "DemandInflowCorrelation"
+            ]
+        }
+    },
+    {
+        "id": 11,
+        "object": "DemandSegment :Defines demand segments",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": [
+                "PricePerBlock",
+                "EnergyPerBlock",
+                "EnergyPerHour",
+                "PricePerHour",
+                "EnergyPerHourlyScenario"
+            ]
+        }
+    },
+    {
+        "id": 12,
+        "object": "Emission : Sets emissions ",
+        "properties": {
+            "mandatory": [
+                "RefPlants"
+            ],
+            "references_objects": [
+                "RefPlants"
+            ],
+            "static_properties": [
+                "Unit",
+                "RefPlants"
+            ],
+            "dynamic_properties": [
+                "EmissionCoeficient",
+                "EmissionCost",
+                "ViolationPenalty",
+                "EmissionQuota"
+            ]
+        }
+    },
+    {
+        "id": 13,
+        "object": "ExpansionAssociated : Adds related assets to expansion",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [
+                "Delay"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 14,
+        "object": "ExpansionDecision : Represents investment decisions",
+        "properties": {
+            "mandatory": [
+                "RefProject"
+            ],
+            "references_objects": [
+                "RefProject"
+            ],
+            "static_properties": [
+                "Capacity",
+                "CapacityPu",
+                "DataMax",
+                "DataMin",
+                "DecisionType",
+                "Label",
+                "PlannedDecision",
+                "RefProject"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 15,
+        "object": "ExpansionGenericConstraint : Adds generic expansion constraints",
+        "properties": {
+            "mandatory": [
+                "RefProjects"
+            ],
+            "references_objects": [
+                "AgentElement",
+                "RefProjects"
+            ],
+            "static_properties": [
+                "AgentElement",
+                "Coefficients",
+                "DataMax",
+                "DataMin",
+                "FlagIncremental",
+                "LimitType",
+                "Penalty",
+                "RHS",
+                "Selected",
+                "RefProjects"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 16,
+        "object": "ExpansionPrecedence : Defines project order rules",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [
+                "Delay",
+                "Force"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 17,
+        "object": "ExpansionProject : Configures expansion projects",
+        "properties": {
+            "mandatory": [
+                "RefUnitElement"
+            ],
+            "references_objects": [
+                "GenDataTable",
+                "RefUnitExistentElement",
+                "RefUnitElement",
+                "RefSchedule"
+            ],
+            "static_properties": [
+                "FinalYear",
+                "InitialYear",
+                "Belongs",
+                "CapacityEntranceSchedule",
+                "MaximumDate",
+                "MinimumDate",
+                "DecisionType",
+                "DecisionVar",
+                "DecisionVarUntil",
+                "DegradationFactor",
+                "DiscountRate",
+                "EmissionCost",
+                "EntranceScheduleStage",
+                "EntranceScheduleUnits",
+                "FCapGar",
+                "FCapMed",
+                "FlagDiscountRate",
+                "GenDataTable",
+                "IntegrationCost",
+                "InvestCostUnit",
+                "LifeTime",
+                "MaxMods",
+                "ExtraYears",
+                "VariableOperationAndMaintenanceCost",
+                "O&MVarFlag",
+                "OpeLifeTime",
+                "YearDegradationFactor",
+                "YearO&MVar",
+                "RefUnitExistentElement",
+                "RefUnitElement",
+                "RefSchedule"
+            ],
+            "dynamic_properties": [
+                "FixedO&MCost",
+                "InvestCost"
+            ]
+        }
+    },
+    {
+        "id": 18,
+        "object": "FlowController : Configures flow controll",
+        "properties": {
+            "mandatory": [
+                "RefCircuit"
+            ],
+            "references_objects": [
+                "RefCircuit"
+            ],
+            "static_properties": [
+                "DeviceType",
+                "FlowControlType",
+                "Location",
+                "RefCircuit"
+            ],
+            "dynamic_properties": [
+                "Bypass",
+                "Decommissioned",
+                "Type",
+                "MaximumFlow",
+                "MaximumEmergencyFlow",
+                "MaximumInjectedPower",
+                "MinimumFlow",
+                "MinimumEmergencyFlow",
+                "OutageProbability",
+                "EmergencyRating",
+                "NormalRating",
+                "Reactance",
+                "State",
+                "MaximumReactance",
+                "MinimumReactance"
+            ]
+        }
+    },
+    {
+        "id": 19,
+        "object": "Fuel : Defines fuel types",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem"
+            ],
+            "static_properties": [
+                "EmissionFactor",
+                "TypeOfPriceVariation",
+                "ScenarioCost",
+                "Unit",
+                "UE",
+                "RefSystem"
+            ],
+            "dynamic_properties": [
+                "Availability",
+                "ConsumptionRate",
+                "Price"
+            ]
+        }
+    },
+    {
+        "id": 20,
+        "object": "FuelConsumption : Maps fuel consumption ",
+        "properties": {
+            "mandatory": [
+                "RefFuel"
+            ],
+            "references_objects": [
+                "RefFuel"
+            ],
+            "static_properties": [
+                "RefFuel"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 21,
+        "object": "FuelContract : Configures fuel contracts",
+        "properties": {
+            "mandatory": [
+                "RefFuel"
+            ],
+            "references_objects": [
+                "RefFuel",
+                "RefPlants",
+                "RefReservoirs"
+            ],
+            "static_properties": [
+                "ConsumedAmount",
+                "ContractedAmount",
+                "ExtraTakeOrPayCost",
+                "FinalDate",
+                "InitialDate",
+                "MaximumOfftakeRate",
+                "MaximumTransferOnRenewal",
+                "MinimumOfftakeRate",
+                "MinimumOfftakeRatePenalty",
+                "MinOfftakeRatePerStage",
+                "NumberOfRenewals",
+                "UnconsumedFuelCost",
+                "TakeOrPayAmount",
+                "TakeOrPayFuelCost",
+                "Type",
+                "Unit",
+                "RefFuel",
+                "RefPlants",
+                "RefReservoirs"
+            ],
+            "dynamic_properties": [
+                "Availability",
+                "Cost",
+                "WithdrawalRate",
+                "MaximumChronologicalOfftakeRate",
+                "MinimumChronologicalOfftakeRate",
+                "MinOfftakeRatePerStageChro",
+                "TakeOrPayRenewalCost"
+            ]
+        }
+    },
+    {
+        "id": 22,
+        "object": "FuelProducer : Models fuel producers",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem"
+            ],
+            "static_properties": [
+                "RefSystem"
+            ],
+            "dynamic_properties": [
+                "Existing",
+                "MaxProd",
+                "SpecCons"
+            ]
+        }
+    },
+    {
+        "id": 23,
+        "object": "FuelReservoir :Represents fuel storage ",
+        "properties": {
+            "mandatory": [
+                "RefFuel"
+            ],
+            "references_objects": [
+                "RefFuel"
+            ],
+            "static_properties": [
+                "InitialCondition",
+                "RefFuel"
+            ],
+            "dynamic_properties": [
+                "MaximumInjection",
+                "MaximumWithdrawal",
+                "MaximumCapacity"
+            ]
+        }
+    },
+    {
+        "id": 24,
+        "object": "GasEmission : Sets emissions (replaced by Emission)",
+        "properties": {
+            "mandatory": [
+                "RefPlants"
+            ],
+            "references_objects": [
+                "RefPlants"
+            ],
+            "static_properties": [
+                "Unit",
+                "RefPlants"
+            ],
+            "dynamic_properties": [
+                "EmissionCoeficient",
+                "EmissionCost",
+                "ViolationPenalty",
+                "EmissionQuota"
+            ]
+        }
+    },
+    {
+        "id": 25,
+        "object": "GasNode : Models gas node",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem"
+            ],
+            "static_properties": [
+                "Latitude",
+                "Longitude",
+                "RefSystem"
+            ],
+            "dynamic_properties": [
+                "ProductionCost",
+                "Type",
+                "MaximumLocalProduction",
+                "MinimumLocalProduction"
+            ]
+        }
+    },
+    {
+        "id": 26,
+        "object": "GasPipeline : Represents gas pipelines",
+        "properties": {
+            "mandatory": [
+                "RefNodes"
+            ],
+            "references_objects": [
+                "RefNodes"
+            ],
+            "static_properties": [
+                "RefNodes"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 27,
+        "object": "GenerationConstraint : Sets generation limits",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefBatteries",
+                "RefSystem",
+                "RefPlants"
+            ],
+            "static_properties": [
+                "FixedValue",
+                "ConstraintType",
+                "RefBatteries",
+                "RefSystem",
+                "RefPlants"
+            ],
+            "dynamic_properties": [
+                "ConstraintValue"
+            ]
+        }
+    },
+    {
+        "id": 28,
+        "object": "GenericConstraint : Adds custom constraints ",
+        "properties": {
+            "mandatory": [
+                "RefElements",
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefElements",
+                "RefSystem"
+            ],
+            "static_properties": [
+                "Coefficients",
+                "FinalDate",
+                "InitialDate",
+                "ConstraintType",
+                "Penalty",
+                "RHSType",
+                "Resolution",
+                "Unit",
+                "Units",
+                "Variable",
+                "Sign",
+                "RefElements",
+                "RefSystem"
+            ],
+            "dynamic_properties": [
+                "Requirement"
+            ]
+        }
+    },
+    {
+        "id": 29,
+        "object": "HydroGenerator : Models hydro generators",
+        "properties": {
+            "mandatory": [
+                "RefBus"
+            ],
+            "references_objects": [
+                "ControlledBus",
+                "Owner",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "ControlledBus",
+                "DevOpt",
+                "Owner",
+                "OwnerShare",
+                "ReactivePowerControlType",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "Type",
+                "GR",
+                "GX",
+                "GenDev",
+                "MaxDev",
+                "MaximumGeneration",
+                "MaxReactivePower",
+                "MaximumTurbining",
+                "MinimumGeneration",
+                "MinReactivePower",
+                "MinimumTurbining",
+                "NumberOfUnits",
+                "ReactivePowerFactor",
+                "TR",
+                "TX",
+                "Tap"
+            ]
+        }
+    },
+    {
+        "id": 30,
+        "object": "HydroPlant : Defines hydro plants",
+        "properties": {
+            "mandatory": [
+                "RefSystem",
+                "RefStation"
+            ],
+            "references_objects": [
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "RefSystem",
+                "RefStation",
+                "RefBus",
+                "RefGenerators"
+            ],
+            "static_properties": [
+                "AlertStoragePenalty",
+                "Area",
+                "ConstantAreaInPolicyCalculation",
+                "Commitment",
+                "DeadStorageDate",
+                "OutflowRampDown",
+                "OutflowRampUp",
+                "DeadStorageDuration",
+                "EnergiaFirmeUnit",
+                "EvaporationCoefficient",
+                "ProductionCoefficient",
+                "Storage",
+                "FiltrationPlantInBackwardRecursion",
+                "FiltrationTypeInBackwardRecursion",
+                "TotalOutflow",
+                "Spilling",
+                "Turbining",
+                "ForebayDrawDown",
+                "ForebayFillUp",
+                "ForebayPen",
+                "ForebayPenType",
+                "ForebayRampDown",
+                "ForebayRampUp",
+                "HxAPolCoefficients",
+                "HxAPolOrder",
+                "InfiltType",
+                "DeadStorageInitialValue",
+                "IrrigationDchr",
+                "InitialAccumulatedGeneration",
+                "ReferenceGeneration",
+                "Latitude",
+                "Longitude",
+                "MaintenanceType",
+                "MaintenanceUnit",
+                "Unit",
+                "MaximumSpillagePenalty",
+                "MaximumNumberOfStartUps",
+                "MaximumTotalOutflowPenalty",
+                "MaximumTurbiningPenalty",
+                "MeanTailwaterLevel",
+                "MinimumSpillagePenalty",
+                "MinimumTotalOutflowPenalty",
+                "MinimumTurbiningPenalty",
+                "OperationMode",
+                "OutageSampling",
+                "Shpolya0",
+                "Shpolya1",
+                "Shpolya2",
+                "Shpolya3",
+                "Shpolya4",
+                "HydroLossesUnit",
+                "PotenciaFirmeUnit",
+                "SpecificProductibility",
+                "HydroLosses",
+                "ProductionCoefficientPolicy",
+                "ProductionCoefficientSimulation",
+                "GenerationRampDown",
+                "GenerationRampUp",
+                "ModulationFactor",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "IrrigationPenaltyType",
+                "IrrigationPenalty",
+                "SpillingRampDown",
+                "SpillingRampUp",
+                "SpillageCost",
+                "SpillageCostType",
+                "StartUpCost",
+                "Infiltration",
+                "PlantIsConsideredInCalculationOfStoredEnergyAndInflowEnergy",
+                "WaterTravelTimeSpilling",
+                "WaterTravelTimeTurbining",
+                "TurbineGeneratorEfficiency",
+                "TurbiningRampDown",
+                "TurbiningRampUp",
+                "TurbineType",
+                "SpillageType",
+                "InitialCondition",
+                "TypeOfInitialCondition",
+                "MaximumOperativeStoragePenalty",
+                "MinimumOperativeStoragePenalty",
+                "RefSystem",
+                "RefStation",
+                "RefBus",
+                "RefGenerators"
+            ],
+            "dynamic_properties": [
+                "AlertStorage",
+                "MinimumTotalOutflow",
+                "StorageEnergyType",
+                "EnergiaFirme",
+                "Type",
+                "MeanProductionCoefficient",
+                "FloodControlStorage",
+                "ForcedOutageRateFor",
+                "HistoricalOutageFactorCor",
+                "TurbiningXInflowIndicator",
+                "Premium",
+                "LossFactor",
+                "Maintenance",
+                "MaintenancePerHour",
+                "MaxSecondaryPerReserve",
+                "MaximumReserve",
+                "MaximumSpillage",
+                "MaximumTotalOutflow",
+                "MaximumTurbining",
+                "MinGen",
+                "MinimumSpillage",
+                "MinimumTurbining",
+                "NetH",
+                "NetHead",
+                "OMVariableCost",
+                "TurbiningXEfficiencyEfficiency",
+                "TurbiningXEfficiencyTurbining",
+                "Outflow",
+                "OxT_Outflow_S",
+                "Elevation",
+                "OxT_Tail_S",
+                "InstalledCapacity",
+                "PotenciaFirme",
+                "Power",
+                "PriceSecondaryPerReserve",
+                "BidPrice",
+                "ProdCoef",
+                "MaximumTurbinedOutflow",
+                "MinimumTurbinedOutflow",
+                "RegulationTime",
+                "Irrigation",
+                "SingleReserve",
+                "Inflow",
+                "UnavailabilityValue",
+                "NumberOfUnits",
+                "MaximumStorage",
+                "MinimumStorage",
+                "ControllableFrom",
+                "MaximumOperativeStorage",
+                "MinimumOperativeStorage"
+            ]
+        }
+    },
+    {
+        "id": 31,
+        "object": "HydroPlantConnection : Connects hydro plants",
+        "properties": {
+            "mandatory": [
+                "RefPlants"
+            ],
+            "references_objects": [
+                "RefPlants"
+            ],
+            "static_properties": [
+                "IsAssociatedReservoir",
+                "IsFiltration",
+                "IsStoredEnergy",
+                "IsTurbining",
+                "IsSpillage",
+                "RefPlants"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 32,
+        "object": "HydroStation : Configures hydro stations",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [
+                "DownstreamStation"
+            ],
+            "static_properties": [
+                "AverageOfStage",
+                "AvA",
+                "DownstreamStation",
+                "AutorregressiveCoefficient",
+                "FiA",
+                "HourlyInflows",
+                "HistoricInflowResolution",
+                "Inflows",
+                "OrderOfArModel",
+                "StandartDeviationOfStage",
+                "SdA",
+                "Teta"
+            ],
+            "dynamic_properties": [
+                "Inflow"
+            ]
+        }
+    },
+    {
+        "id": 33,
+        "object": "HydroStationConnection : Links hydro stations",
+        "properties": {
+            "mandatory": [
+                "RefStations"
+            ],
+            "references_objects": [
+                "RefStations"
+            ],
+            "static_properties": [
+                "RefStations"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 34,
+        "object": "Interconnection : Models inter-area or inter-systems connections",
+        "properties": {
+            "mandatory": [
+                "RefSystems"
+            ],
+            "references_objects": [
+                "RefSystems"
+            ],
+            "static_properties": [
+                "Currency",
+                "RefSystems"
+            ],
+            "dynamic_properties": [
+                "CapacityFromTo",
+                "CapacityToFrom",
+                "FromTo",
+                "ToFrom",
+                "Type",
+                "LossFromTo",
+                "LossToFrom"
+            ]
+        }
+    },
+    {
+        "id": 35,
+        "object": "InterpolationGenericConstraint : Adds interpolated constraints ",
+        "properties": {
+            "mandatory": [
+                "RefElements"
+            ],
+            "references_objects": [
+                "RefElements"
+            ],
+            "static_properties": [
+                "Penalty",
+                "Sign",
+                "Unit",
+                "Variable",
+                "RefElements"
+            ],
+            "dynamic_properties": [
+                "Coefficients"
+            ]
+        }
+    },
+    {
+        "id": 36,
+        "object": "LCCConverter : Represents LCC converters",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "RefBuses"
+            ],
+            "static_properties": [
+                "Bridges",
+                "ConverterType",
+                "Frequency",
+                "SecondaryVoltage",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "Capacitance",
+                "Decommissioned",
+                "DesiredExtinctionAngle",
+                "DesiredIgnitionAngle",
+                "Type",
+                "MaximumAcDcCapacity",
+                "MaximumDcAcCapacity",
+                "MaximumExtinctionAngle",
+                "MaximumIgnitionAngle",
+                "MaximumTap",
+                "MinimumExtinctionAngle",
+                "MinimumIgnitionAngle",
+                "MinimumTap",
+                "NominalCurrent",
+                "NominalPower",
+                "OperativeState",
+                "Tap",
+                "TapSteps",
+                "CommutationReactance"
+            ]
+        }
+    },
+    {
+        "id": 37,
+        "object": "LineReactor : Models line reactors",
+        "properties": {
+            "mandatory": [
+                "RefCircuit"
+            ],
+            "references_objects": [
+                "RefCircuit"
+            ],
+            "static_properties": [
+                "RefCircuit"
+            ],
+            "dynamic_properties": [
+                "Bfrom",
+                "Bto",
+                "Decommissioned",
+                "Type",
+                "Gfrom",
+                "Gto",
+                "OperativeState"
+            ]
+        }
+    },
+    {
+        "id": 38,
+        "object": "Load : Represents load profiles",
+        "properties": {
+            "mandatory": [
+                "RefBus",
+                "RefDemand"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefBus",
+                "RefDemand"
+            ],
+            "static_properties": [
+                "Owner",
+                "OwnerShare",
+                "ReactivePowerInputType",
+                "RefBus",
+                "RefDemand"
+            ],
+            "dynamic_properties": [
+                "Pi",
+                "Pp",
+                "Pz",
+                "Qi",
+                "Qp",
+                "Qz"
+            ]
+        }
+    },
+    {
+        "id": 39,
+        "object": "MTDCLink :Models multi-terminal DC links",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [
+                "BasePower",
+                "BaseVoltage",
+                "Technology"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 40,
+        "object": "PaymentSchedule : Defines payment schedules in OPTGEN",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [
+                "Capital",
+                "Disbursement",
+                "Year"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 41,
+        "object": "PowerInjection :Models power injections in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem",
+                "RefBus"
+            ],
+            "static_properties": [
+                "RefSystem",
+                "RefBus"
+            ],
+            "dynamic_properties": [
+                "HourlyInjection",
+                "HourlyInjectionPrice"
+            ]
+        }
+    },
+    {
+        "id": 42,
+        "object": "RenewableCapacityProfile :Defines renewable availability in TSL",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 43,
+        "object": "RenewableGenerator :Defines renewable generators in TSL",
+        "properties": {
+            "mandatory": [
+                "RefBus"
+            ],
+            "references_objects": [
+                "ControlledBus",
+                "Owner",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "ControlledBus",
+                "DevOpt",
+                "Owner",
+                "OwnerShare",
+                "ReactivePowerControlType",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "Type",
+                "GR",
+                "GX",
+                "GenDev",
+                "MaxDev",
+                "MaximumGeneration",
+                "MaxReactivePower",
+                "MinReactivePower",
+                "NumberOfUnits",
+                "ReactivePowerFactor",
+                "TR",
+                "TX",
+                "Tap"
+            ]
+        }
+    },
+    {
+        "id": 44,
+        "object": "RenewablePlant :Models renewable plants in SDDP, NCP, OPTGEN, and TSL.",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "RefCapacityProfile",
+                "RefSystem",
+                "RefStation",
+                "RefBus",
+                "RefGenerators",
+                "RefTurbine",
+                "RefWindSpeedPoints"
+            ],
+            "static_properties": [
+                "EnergiaFirmeUnit",
+                "Latitude",
+                "Longitude",
+                "MaxSecondaryReserveUnit",
+                "PotenciaFirmeUnit",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "TechnologyType",
+                "RefCapacityProfile",
+                "RefSystem",
+                "RefStation",
+                "RefBus",
+                "RefGenerators",
+                "RefTurbine",
+                "RefWindSpeedPoints"
+            ],
+            "dynamic_properties": [
+                "SpillingPenalty",
+                "EnergiaFirme",
+                "Type",
+                "OperationFactor",
+                "RenewableEnergyGenerationScenariosPerBlock",
+                "HistoricalGeneration",
+                "RenewableEnergyGenerationScenariosPerHour",
+                "OutageProbability",
+                "MaintenanceType",
+                "MaintenancePerHour",
+                "MaxSecondaryPerReserve",
+                "MaximumReserve",
+                "OMCost",
+                "InstalledCapacity",
+                "PotenciaFirme",
+                "PriceSecondaryPerReserve",
+                "BidPrice",
+                "UnavailabilityValue",
+                "NumberOfUnits",
+                "OutageSampling"
+            ]
+        }
+    },
+    {
+        "id": 45,
+        "object": "RenewableStation :Groups renewable units in SDDP and NCP",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem"
+            ],
+            "static_properties": [
+                "DataSource",
+                "TechnologyType",
+                "RefSystem"
+            ],
+            "dynamic_properties": [
+                "Generation",
+                "HistoricalGeneration",
+                "HourGeneration"
+            ]
+        }
+    },
+    {
+        "id": 46,
+        "object": "RenewableTurbine: Represents turbines in TSL",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 47,
+        "object": "RenewableWindSpeedPoint:Defines wind curves in TSL",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 48,
+        "object": "ReserveGeneration:Models reserve generation in SDDP and NCP.",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [
+                "ReliabilityLevel",
+                "A",
+                "B",
+                "FlowDirection",
+                "NonSelectedPlantsInGenerationReserve",
+                "SelectedPlantsInGenerationReserve",
+                "DcLinkFlowLimit",
+                "ExclusiveReserveRequirement",
+                "HourReserveRPD",
+                "Unit",
+                "RiskAversionFactor",
+                "RequirementType",
+                "Penalty",
+                "ChronologicalDataType",
+                "ReserveType",
+                "Sense",
+                "GenerationReserveAsAFunctionOfDemand",
+                "Level"
+            ],
+            "dynamic_properties": [
+                "HourReserve",
+                "ConstraintValue"
+            ]
+        }
+    },
+    {
+        "id": 49,
+        "object": "ReservoirSet: Groups reservoirs in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefPlants"
+            ],
+            "references_objects": [
+                "RefPlants"
+            ],
+            "static_properties": [
+                "AlertEnergyPenalty",
+                "AlertEnergyUnit",
+                "FloodControlEnergyPenalty",
+                "Unit",
+                "SecurityEnergyPenalty",
+                "SecurityEnergyUnit",
+                "RefPlants"
+            ],
+            "dynamic_properties": [
+                "AlertEnergy",
+                "FloodControlEnergy",
+                "SecurityEnergy"
+            ]
+        }
+    },
+    {
+        "id": 50,
+        "object": "SensitivityGroup : Groups sensitivities in SDDP",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [
+                "Elements"
+            ],
+            "static_properties": [
+                "Elements",
+                "Factors",
+                "Keywords",
+                "Status"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 51,
+        "object": "SeriesCapacitor: Models series capacitors in SDDP.",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefBuses"
+            ],
+            "static_properties": [
+                "Contingencies",
+                "Monitoring",
+                "OutageSampling",
+                "FlagTariff",
+                "FlowControlType",
+                "MeteringEnd",
+                "Owner",
+                "OwnerShare",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "Bypass",
+                "Decommissioned",
+                "Type",
+                "MaximumFlow",
+                "MaximumEmergencyFlow",
+                "MinimumFlow",
+                "MinimumEmergencyFlow",
+                "OutageProbability",
+                "EmergencyRating",
+                "NormalRating",
+                "Reactance",
+                "OperativeState",
+                "MaximumReactance",
+                "MinimumReactance"
+            ]
+        }
+    },
+    {
+        "id": 52,
+        "object": "StaticVarCompensator :Models VAR compensators in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefBus"
+            ],
+            "references_objects": [
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "LimitsCorrectionType",
+                "ControlType",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "Decommissioned",
+                "Droop",
+                "Type",
+                "MaximumReactivePower",
+                "MinimumReactivePower",
+                "NumberOfUnits",
+                "Setpoint",
+                "UnitsInService"
+            ]
+        }
+    },
+    {
+        "id": 53,
+        "object": "SumOfCircuits :Aggregates circuits in SDDP.",
+        "properties": {
+            "mandatory": [
+                "RefCircuits"
+            ],
+            "references_objects": [
+                "RefCircuits"
+            ],
+            "static_properties": [
+                "Coefficients",
+                "ConstantLowerBound",
+                "ConstantUpperBound",
+                "FlagLB",
+                "FlagUB",
+                "RefCircuits"
+            ],
+            "dynamic_properties": [
+                "LowerBound",
+                "UpperBound"
+            ]
+        }
+    },
+    {
+        "id": 54,
+        "object": "SumOfInterconnections:Aggregates interconnections in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefInterconnections"
+            ],
+            "references_objects": [
+                "RefInterconnections"
+            ],
+            "static_properties": [
+                "Coefficients",
+                "RefInterconnections"
+            ],
+            "dynamic_properties": [
+                "LowerBound",
+                "UpperBound"
+            ]
+        }
+    },
+    {
+        "id": 55,
+        "object": "SupplyChainDemand :Models SupplyChain demand in SDDP.",
+        "properties": {
+            "mandatory": [
+                "RefSystem",
+                "RefSegments"
+            ],
+            "references_objects": [
+                "RefSystem",
+                "RefSegments",
+                "RefProcess",
+                "RefNode"
+            ],
+            "static_properties": [
+                "CurtCost",
+                "FirstElastic",
+                "IsFlexible",
+                "MaxCurt",
+                "MaxShiftDown",
+                "MaxShiftUp",
+                "DemandAndPriceResolution",
+                "Window",
+                "RefSystem",
+                "RefSegments",
+                "RefProcess",
+                "RefNode"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 56,
+        "object": "SupplyChainDemandSegment :Segments SupplyChain demand in SDDP",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": [
+                "PricePerBlock",
+                "DemandPerBlock",
+                "DemandPerHour",
+                "PricePerHour"
+            ]
+        }
+    },
+    {
+        "id": 57,
+        "object": "SupplyChainFixedConverter :Defines fixed commodities converter types in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefCommodities"
+            ],
+            "references_objects": [
+                "RefCommodities"
+            ],
+            "static_properties": [
+                "RefCommodities"
+            ],
+            "dynamic_properties": [
+                "CapacityFactor",
+                "Type",
+                "MinimumLevel"
+            ]
+        }
+    },
+    {
+        "id": 58,
+        "object": "SupplyChainFixedConverterCommodity :Defines fixed converter's commodity types in SDDP.",
+        "properties": {
+            "mandatory": [
+                "RefNode"
+            ],
+            "references_objects": [
+                "RefNode"
+            ],
+            "static_properties": [
+                "HasCapacity",
+                "HasCost",
+                "HasRampDown",
+                "HasRampUp",
+                "NodeType",
+                "RampDown",
+                "RampUp",
+                "Type",
+                "RefNode"
+            ],
+            "dynamic_properties": [
+                "Capacity",
+                "Cost",
+                "Quantity"
+            ]
+        }
+    },
+    {
+        "id": 59,
+        "object": "SupplyChainNode :Defines SupplyChain nodes in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem",
+                "RefProcess"
+            ],
+            "static_properties": [
+                "Latitude",
+                "Longitude",
+                "RefSystem",
+                "RefProcess"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 60,
+        "object": "SupplyChainProcess :Models conversion processes in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefFuel"
+            ],
+            "references_objects": [
+                "RefFuel"
+            ],
+            "static_properties": [
+                "DeficitCost",
+                "EnergyDensity",
+                "HasDensity",
+                "MassDensity",
+                "Unit",
+                "RefFuel"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 61,
+        "object": "SupplyChainProducer :Represents energy producers in SDDP",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": [
+                "Type",
+                "MaximumProduction",
+                "MinimumProduction",
+                "OMCost"
+            ]
+        }
+    },
+    {
+        "id": 62,
+        "object": "SupplyChainStorage :Models SupplyChain storage in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefSystem"
+            ],
+            "references_objects": [
+                "RefSystem",
+                "RefNode"
+            ],
+            "static_properties": [
+                "ChargeRamp",
+                "DischargeRamp",
+                "OperationMode",
+                "InitialStorage",
+                "MaximumRegulationTime",
+                "RefSystem",
+                "RefNode"
+            ],
+            "dynamic_properties": [
+                "ChargeEfficiency",
+                "DischargeEfficiency",
+                "Type",
+                "MaximumChargeRate",
+                "Capacity",
+                "MaximumStorage",
+                "MinimumStorage"
+            ]
+        }
+    },
+    {
+        "id": 63,
+        "object": "SupplyChainTransport :Represents transport-related demand in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefNodes"
+            ],
+            "references_objects": [
+                "RefNodes"
+            ],
+            "static_properties": [
+                "Currency",
+                "RefNodes"
+            ],
+            "dynamic_properties": [
+                "CapacityFromTo",
+                "CapacityToFrom",
+                "CostFromTo",
+                "CostToFrom",
+                "Type",
+                "LossFromTo",
+                "LossToFrom"
+            ]
+        }
+    },
+    {
+        "id": 64,
+        "object": "SynchronousCompensator :Models synchronous compensators in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefBus"
+            ],
+            "references_objects": [
+                "ControlledBus",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "ControlledBus",
+                "DeviceType",
+                "ReactivePowerControlType",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "Decommissioned",
+                "Type",
+                "GR",
+                "GX",
+                "MaxReactivePower",
+                "MinReactivePower",
+                "NumberOfUnits",
+                "ReactivePowerFactor",
+                "Setpoint",
+                "TR",
+                "TX",
+                "Tap"
+            ]
+        }
+    },
+    {
+        "id": 65,
+        "object": "System :Defines system-wide settings in SDDP, NCP, and OPTGEN",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [
+                "RefConstraints",
+                "RefReserveGenerationConstraints",
+                "RefFuelReservoirs"
+            ],
+            "static_properties": [
+                "EnergiaFirmeBattery",
+                "EnergiaFirmeGnd",
+                "EnergiaFirmeHydro",
+                "EnergiaFirmeThermal",
+                "Ignored",
+                "Latitude",
+                "Longitude",
+                "PotenciaFirmeBattery",
+                "PotenciaFirmeGnd",
+                "PotenciaFirmeHydro",
+                "PotenciaFirmeThermal",
+                "FixedValue",
+                "TimeZoneOffset",
+                "HydroMaintenanceType",
+                "ThermalMaintenanceType",
+                "GenerationReserveInformationType",
+                "SpinningReserve",
+                "HydroMaintenanceUnit",
+                "ThermalMaintenanceUnit",
+                "Unit",
+                "SpinningReserveUnitType",
+                "SystemCurrency",
+                "RefConstraints",
+                "RefReserveGenerationConstraints",
+                "RefFuelReservoirs"
+            ],
+            "dynamic_properties": [
+                "CoefVariation",
+                "CarbonCreditCost",
+                "FatorEnergiaFirme",
+                "FatorPotenciaFirme",
+                "RiskAversionCurve"
+            ]
+        }
+    },
+    {
+        "id": 66,
+        "object": "TargetGeneration :Sets target generation in SDDP and NCP",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [
+                "RefPlants",
+                "RefBatteries"
+            ],
+            "static_properties": [
+                "RefPlants",
+                "RefBatteries"
+            ],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 67,
+        "object": "ThermalCombinedCycle :Models combined-cycle plants in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefPlants"
+            ],
+            "references_objects": [
+                "RefPlants"
+            ],
+            "static_properties": [
+                "Latitude",
+                "Longitude",
+                "Type",
+                "RefPlants"
+            ],
+            "dynamic_properties": [
+                "OperativeState"
+            ]
+        }
+    },
+    {
+        "id": 68,
+        "object": "ThermalGenerator :Models thermal generators in SDDP and NCP",
+        "properties": {
+            "mandatory": [
+                "RefBus"
+            ],
+            "references_objects": [
+                "ControlledBus",
+                "Owner",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "ControlledBus",
+                "DevOpt",
+                "Owner",
+                "OwnerShare",
+                "ReactivePowerControlType",
+                "RefBus",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "Type",
+                "GR",
+                "GX",
+                "GenDev",
+                "MaxDev",
+                "MaximumGeneration",
+                "MaxReactivePower",
+                "MinimumGeneration",
+                "MinReactivePower",
+                "NumberOfUnits",
+                "ReactivePowerFactor",
+                "TR",
+                "TX",
+                "Tap"
+            ]
+        }
+    },
+    {
+        "id": 69,
+        "object": "ThermalPlant :Represents thermal plants in SDDP, NCP, and OPTGEN",
+        "properties": {
+            "mandatory": [
+                "RefFuels",
+                "RefSystem"
+            ],
+            "references_objects": [
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "RefGasNode",
+                "RefFuels",
+                "RefSystem",
+                "RefBus",
+                "RefGenerators",
+                "RefFuelConsumption"
+            ],
+            "static_properties": [
+                "CombinedCycleType",
+                "MinimumGenerationPenalty",
+                "MinimumGenerationUnit",
+                "Commitment",
+                "ConstantGenerationInEachStage",
+                "EnergiaFirmeUnit",
+                "SingleFuelGeneration",
+                "Latitude",
+                "Longitude",
+                "MaintenanceType",
+                "MaintenanceUnit",
+                "MaxFuelConsVariation",
+                "MaxFuelConsVariationLimit",
+                "MaxSecondaryReserveUnit",
+                "MaximumNumberOfShutdowns",
+                "MaximumNumberOfStartUps",
+                "MaximumUptime",
+                "MinimumDowntime",
+                "MinimumUptime",
+                "PartialCoolingTime",
+                "PotenciaFirmeUnit",
+                "RampDown",
+                "RampDownCost",
+                "RampUp",
+                "RampUpCost",
+                "ReserveOfMaxSecondaryPerReserve",
+                "ReserveOfPriceSecondaryPerReserve",
+                "ShutdownCost",
+                "Unit",
+                "ColdStartupCost",
+                "WarmStartupCost",
+                "ThermalType",
+                "TotalCoolingTime",
+                "RefGasNode",
+                "RefFuels",
+                "RefSystem",
+                "RefBus",
+                "RefGenerators",
+                "RefFuelConsumption"
+            ],
+            "dynamic_properties": [
+                "SpecificConsumption",
+                "FuelTransportationCost",
+                "MinimumGeneration",
+                "StartupCost",
+                "Co2EmissionCoefficient",
+                "EnergiaFirme",
+                "Type",
+                "SpecificConsumptionSegment",
+                "MaximumGenerationCapacity",
+                "MinimumGenerationCapacity",
+                "ForcedOutageRate",
+                "HistoricalOutageFactor",
+                "Maintenance",
+                "MaintenancePerHour",
+                "MaxSecondaryPerReserve",
+                "MaximumReserve",
+                "CodeOfAlternativeFuels",
+                "NumberOfAlternativeFuels",
+                "GasSystem",
+                "OMVariableCost",
+                "InstalledCapacity",
+                "PotenciaFirme",
+                "PriceSecondaryPerReserve",
+                "BidPrice",
+                "SingleReserve",
+                "HotStartupCost",
+                "UnavailabilityValue",
+                "NumberOfUnits",
+                "OutageSampling"
+            ]
+        }
+    },
+    {
+        "id": 70,
+        "object": "ThreeWindingsTransformer :Models 3-winding transformers in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefBuses",
+                "RefControlledBuses"
+            ],
+            "static_properties": [
+                "ControlType",
+                "Contingency",
+                "Monitored",
+                "OutageSampling",
+                "ImpedanceUnits",
+                "LockedControl",
+                "AdmittanceUnits",
+                "MeteringEnd",
+                "Owner",
+                "OwnerShare",
+                "WindingUnits",
+                "RefBuses",
+                "RefControlledBuses"
+            ],
+            "dynamic_properties": [
+                "12BasePower",
+                "13BasePower",
+                "23BasePower",
+                "Decommissioned",
+                "Type",
+                "MagnetizingConductance",
+                "MagnetizingSusceptance",
+                "MaximumPhaseAngle",
+                "MaximumTap",
+                "MinimumPhaseAngle",
+                "MinimumTap",
+                "Winding1NominalVoltage",
+                "Winding2NominalVoltage",
+                "Winding3NominalVoltage",
+                "PrimaryPhaseAngle",
+                "SecondaryPhaseAngle",
+                "TertiaryPhaseAngle",
+                "OutageProbability",
+                "Resistance",
+                "EmergencyRating",
+                "NormalRating",
+                "OperativeState",
+                "PrimaryTap",
+                "SecondaryTap",
+                "TertiaryTap",
+                "TapSteps",
+                "Reactance"
+            ]
+        }
+    },
+    {
+        "id": 71,
+        "object": "Transformer :Models 2-winding transformers in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefBuses"
+            ],
+            "static_properties": [
+                "ControlType",
+                "ControlledSide",
+                "Currency",
+                "Contingency",
+                "Monitored",
+                "OutageSampling",
+                "FlagTariff",
+                "HasMaxSecondaryReserve",
+                "HasPriceSecondaryReserve",
+                "ImpedanceUnits",
+                "IsFictitious",
+                "LockedControl",
+                "MagUnits",
+                "MaxSecondaryReserveUnit",
+                "MeteringEnd",
+                "Owner",
+                "OwnerShare",
+                "WindingUnits",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "12BasePower",
+                "CostFromTo",
+                "CostToFrom",
+                "Decommissioned",
+                "Type",
+                "Mag1",
+                "Mag2",
+                "MaxFlow",
+                "MaxFlowEmergency",
+                "MaxPhaseAngle",
+                "MaxSecondaryReserve",
+                "MaxTap",
+                "MinFlow",
+                "MinFlowEmergency",
+                "MinPhaseAngle",
+                "MinTap",
+                "NominalWinding1Voltage",
+                "NominalWinding2Voltage",
+                "Phase",
+                "PriceSecondaryReserve",
+                "OutageProbability",
+                "Resistance",
+                "EmergencyRating",
+                "NormalRating",
+                "OperativeState",
+                "Tap",
+                "TapSteps",
+                "Reactance"
+            ]
+        }
+    },
+    {
+        "id": 72,
+        "object": "TransmissionLine :Represents transmission circuits in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "Owner",
+                "RefBuses"
+            ],
+            "static_properties": [
+                "CircuitType",
+                "Currency",
+                "Contingency",
+                "Monitored",
+                "OutageSampling",
+                "FlagTariff",
+                "HasMaxSecondaryReserve",
+                "HasPriceSecondaryReserve",
+                "Length",
+                "MaxSecondaryReserveUnit",
+                "MeteringEnd",
+                "Owner",
+                "OwnerShare",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "Susceptance",
+                "CostFromTo",
+                "CostToFrom",
+                "Decommissioned",
+                "Type",
+                "MaxSecondaryReserve",
+                "PriceSecondaryReserve",
+                "OutageProbability",
+                "Resistance",
+                "EmergencyRating",
+                "NormalRating",
+                "OperativeState",
+                "Reactance"
+            ]
+        }
+    },
+    {
+        "id": 73,
+        "object": "TwoTerminalDCLink: Models 2-terminal DC links in SDDP(Replaced by ACInterconnection)",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "RefBuses"
+            ],
+            "static_properties": [
+                "Currency",
+                "FlagQuadraticLoss",
+                "MeteringEnd",
+                "ReserveMargin",
+                "RefBuses"
+            ],
+            "dynamic_properties": [
+                "EmergencyCapacityFromTo",
+                "EmergencyCapacityToFrom",
+                "CapacityFromTo",
+                "CapacityToFrom",
+                "Decommissioned",
+                "Type",
+                "LossFactorFromTo",
+                "LossFactorToFrom",
+                "MaintenanceType",
+                "MaintenanceValue",
+                "Resistance",
+                "ReactivePowerFactorFrom",
+                "TerminalPowerFactorTo",
+                "OperativeState",
+                "WheelingCostFromTo",
+                "WheelingCostToFrom"
+            ]
+        }
+    },
+    {
+        "id": 74,
+        "object": "VSCConverter: Represents VSC converters in SDDP.",
+        "properties": {
+            "mandatory": [
+                "RefBuses"
+            ],
+            "references_objects": [
+                "RefBuses",
+                "RefControlledBus"
+            ],
+            "static_properties": [
+                "ControlType",
+                "ReactivePowerControlType",
+                "RefBuses",
+                "RefControlledBus"
+            ],
+            "dynamic_properties": [
+                "LinearLosses",
+                "ConstantLosses",
+                "Decommissioned",
+                "Type",
+                "MaximumAcDcCapacity",
+                "MaxCurrent",
+                "MaximumDcAcCapacity",
+                "MaxReactivePower",
+                "MinReactivePower",
+                "ReactivePowerFactor",
+                "OperativeState"
+            ]
+        }
+    },
+    {
+        "id": 75,
+        "object": "Waterway :Connects water systems in SDDP",
+        "properties": {
+            "mandatory": [
+                "RefPlants"
+            ],
+            "references_objects": [
+                "RefPlants"
+            ],
+            "static_properties": [
+                "Currency",
+                "Disabled",
+                "StaticMaximumFlow",
+                "MaximumFlowPenalty",
+                "StaticMinimumFlow",
+                "MinimumFlowPenalty",
+                "TravelTime",
+                "RefPlants"
+            ],
+            "dynamic_properties": [
+                "MaximumFlow",
+                "MinimumFlow"
+            ]
+        }
+    },
+    {
+        "id": 76,
+        "object": "Zone",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": [],
+            "dynamic_properties": []
+        }
+    },
+    {
+        "id": 77,
+        "object": "Study : Encapsulates full model setup in SDDP",
+        "properties": {
+            "mandatory": [],
+            "references_objects": [],
+            "static_properties": ["'InitialYearOfHydrology', 'CalculatedFinalYear', 'InitialYear', 'Cost', 'ClimaticVariableName', 'ClimaticVariableUnit', 'ClusterMarkov', 'CodesOfPowerSystems', 'Configuration', 'ToleranceForConvergence', 'Currency', 'ExchangeRate', 'CurrencyReference', 'DayIndex', 'DayTypicalDayMap', 'Segment', 'Description', 'FixedDurationOfBlocks', 'DynamicConvergenceMaxTime', 'DynamicConvergenceNumberSegments', 'DynamicConvergenceTolerance', 'CalculatedFinalStage', 'InitialStage', 'FinalStageCustomRollingHorizon', 'FinalStageFutureCost', 'FinalYearCustomRollingHorizon', 'CreateFcf', 'ReadFcf', 'UseReducedUncertainty', 'UseHotStart', 'FileName', 'Stage', 'Year', 'HistoricalClimaticVariable', 'Horizon', 'HourBlockMapping', 'HourBlockRemap', 'Language', 'NumberOfTheScenariosForSimulation', 'InitialStageCustomRollingHorizon', 'InitialStageFutureCost', 'InitialYearForCustomRollingHorizon', 'Maintenance', 'MaxInterationsCustomRollingHorizon', 'MaxRevSpotPrice', 'MaxRevSpotPriceScen', 'MaximumNumberOfIterations', 'InitialStageOfHydrology', 'MinimumOutflowPenaltyHm3', 'MinSpillageUnit', 'PrintOptions', 'NumberOfBlocks', 'NumberOfBackwardSeries', 'NumberOfForwardSeries', 'NumberOfAdditionalYears', 'WriteResultsForTheAdditionalYears', 'AdditionalYearsOptions', 'AggregateInTheOperationPolicy', 'NumberOfStages', 'NumberOfSystems', 'Activities', 'OperationMode', 'TransmissionLosses', 'TransmissionNetworkRepresentation', 'ReducedUncertaintyFilename', 'ReducedUncertaintyFinalPeriod', 'ReducedUncertaintyFinalYear', 'ReducedUncertaintyInitialPeriod', 'ReducedUncertaintyInitialYear', 'ScenarioClimaticVariable', 'ScenariosInTheFinalSimulation', 'SpillagePenaltyKHm3', 'StageIndex', 'SubHourlyDays', 'SubHourlyDiscretization', 'SubHourlyScenario', 'AnnualDiscountRatePU', 'StageType', 'PARModel', 'VersaoInfoCargaBarra', 'VersionRenewableBlockProfile', 'YearIndex', 'ADLS', 'ALMC', 'ProductionFactor', 'RiskAversion', 'BAGF', 'BAGR', 'BALC', 'BARR', 'BCSV', 'Resolution', 'Iteration', 'Format', 'RepresentPenaltiesInTwoLevels', 'BatteryRegularization', 'BSTV', 'BUNI', 'PenalizationType', 'CASS', 'ChronologicalBlocks', 'LoadSheddingInBuses', 'RepresentCircuitSecurityConstraints', 'ReliabilityLevel', 'RiskAversionFactor', 'CircuitEmergencyCapacityFactorPU', 'OverloadPenaltyMwh', 'CGND', 'CHRB', 'InitialConditionOfTheHydrology', 'CMGB', 'CMNC', 'MonitoringOfCircuitLimits', 'InitialIterationInPolicy', 'COMP', 'CSCN', 'CSDN', 'CSRS', 'CVCT', 'UseADifferentConfigurationOfBlocks', 'ApplyNormalDistributionFactor', 'SplitFutureCostFunction', 'ConsiderEmissionCostsOnThermalCosts', 'ERDC', 'ETYP', 'EXPN', 'FATL', 'FCFO', 'FCNF', 'FFUL', 'FINJ', 'FIXL', 'FKMX', 'ConsiderAtLeastOneLossLinearizationInEachCircuit', 'FMIP', 'FOUT', 'FPCT', 'FPLT', 'FRTL', 'FSCN', 'FTAB', 'CombineAllInflowAndRenewableScenariosInGenesysExecution', 'GCTE', 'GENE', 'GEXC', 'GLLS', 'GMET', 'Generation', 'FilterOutliersOfTheGeneratedSeries', 'PreserveStorageChronologyInTheTransitionBetweenStages', 'HCMT', 'SumOfCircuitFlowsConstraints', 'HINS', 'HIRS', 'HLFR', 'HMEM', 'HOTM', 'RunOfRiverPlantRegularization', 'ClassificationThresholdPU', 'HTPP', 'HYRM', 'ICAS', 'IGMR', 'INFD', 'INFM', 'IterationForTheCalculationOfFixedLossesInThePolicy', 'JRAS', 'LBGT', 'LCIR', 'LLSF', 'LMIT', 'LOSS', 'LSAL', 'LSFI', 'LSST', 'LSTG', 'LSUP', 'CircuitLoadingLimitForMonitoringPU', 'MACM', 'MAXT', 'META', 'MIPH', 'MIPP', 'MIPR', 'MKVT', 'MMPP', 'MinimumNumberOfIterations', 'MUPR', 'MXAP', 'MXBD', 'MXFT', 'MaximumNumberOfMicroIterationsForLossCorrection', 'MaximumNumberOfMicroIterationsForLossesCalculationInFinalSimulation', 'InitialIteration', 'NonConvexityRepresentationInPolicy', 'SingleSystemSimulation', 'NCPL_BETR', 'InitialStorageType', 'NCPL_BMIP', 'OperativeStateOfCombinedCycle', 'NCPL_CKDF', 'NCPL_CKMC', 'NCPL_CRSV', 'NCPL_DEBG', 'NCPL_DETM', 'SliceDurationHours', 'NCPL_GMIN', 'NCPL_GNPR', 'NCPL_HGEN', 'NCPL_HUNI', 'ChronologyRepresentationOfOperatingConstraintsBetweenStages', 'RepresentWaterTravelTimeInitialConditionInTheFirstStage', 'NCPL_KDIS', 'NCPL_LTOL', 'NCPL_MEMO', 'MipRelativeTolerance', 'NonControllableSpillageRepresentation', 'NCPL_NDIS', 'MipMaximumExecutionTime', 'NCPL_PRES', 'NCPL_RALG', 'PreserveRampConstraintsInTheTransitionBetweenSlices', 'NCPL_RLOS', 'RepresentBinaryVariables', 'NCPL_RSBT', 'NCPL_RTRA', 'JointReserveType', 'NCPL_SCRT', 'DecomposeStagesInSlices', 'TerminalFunction', 'NCPL_TMUP', 'UseDynamicConvergence', 'NCPL_WRLP', 'NCRM', 'NCRT', 'NumberOfYears', 'NETP', 'NITH', 'NMET', 'TransmissionNetwork', 'NSIF', 'PENL', 'PENV', 'PFCF', 'PhaseForTransmissionLossesRepresentation', 'PLSS', 'WaterwayFlowPenalty', 'PODP', 'PRTC', 'PSER', 'PSLB', 'PSLD', 'PSLI', 'PTOU', 'PVNC', 'AutomaticRegulatingFactorForBatteries', 'RCTH', 'RepresentDemandInflowCorrelation', 'REDE', 'RELC', 'RELI', 'REQ2', 'SimulationWithReducedFcf', 'LimitIteration', 'AllowOverloadOnMonitoredCircuits', 'RFOR', 'RepresentationOfGasNetwork', 'RollingHorizon', 'RMIP', 'RPK2', 'RPOL', 'RSMP', 'RSUS', 'RTAR', 'S3FI', 'SABS', 'SAGR', 'SBCK', 'SBMD', 'SimulationReadingInitialStorageFiles', 'SEDF', 'SEED', 'SHOT', 'HourlyRepresentation', 'SKPS', 'SOPT', 'SRPD', 'SVFI', 'RemapOption', 'TCND', 'TypicalDays', 'TOLD', 'TOLP', 'TOLR', 'TPVD', 'TrueUpEvaluationUsingAffineRulesInGenesysExecution', 'UMON', 'StartingPointForBackwardRecursion', 'VCLA', 'VEFB', 'VEFX', 'VEXB', 'VEXF', 'InitialStorages', 'VNLE', 'NonControllableSpillage', 'VSEC', 'WMPS', 'WPTR', 'WRLP', 'WSVF', 'StartupCost', 'FuelCost', 'FuelContractCost', 'CarbonCreditCosts', 'EnableVariableDurationOfBlocks', 'FuelContractMaximumOfftake', 'FuelAvailability', 'FuelConsumptionRate', 'FuelReservoirInjectionLimit', 'FuelReservoirWithdrawalLimit', 'MinimumGeneration', 'MinimumSpillage', 'MinimumTotalOutflow', 'SpinningReserve', 'MaximumSpillage', 'MaximumTotalOutflow', 'GenerationReserve', 'GenerationConstraint', 'Irrigation', 'AlertStorage', 'FloodControlStorage', 'MinimumStorage', 'MaximumOperativeStorage', 'AGRV', 'UseHourBlockMapping', 'PowerInjectionPrice', 'DemandPrice', 'DemandEnergy', 'TypicalDaysMapping', 'PowerInjectionCapacity', 'RenewableStation', 'ReferenceUnits', 'UserUnits', 'EnableClimaticVariable', 'EnableMarkovModel', 'HydroStations', 'MarkovInitialWeek', 'MaxYear', 'MinYear', 'NumberOfClusters', 'Order', 'OrderType', 'OutlierFilter', 'SelectionCriterion', 'WeightFactor', 'VariableDurationOfBlocks', 'NumberOfSeries'"
+            ],
+            "dynamic_properties": []
+        }
+    }
+]

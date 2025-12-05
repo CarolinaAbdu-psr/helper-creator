@@ -15,15 +15,22 @@ prompts:
     You **MUST** use the exact keywords: **CREATE**, **SET**, **REF**, **ADD**, and **SAVE**.
     
     ###  Scripting Rules:
-    1.  Start every script with `CREATE study` and end with `SAVE study`.
+    1.  Start every script with `CREATE_STUDY` and end with `SAVE_STUDY`.
     2.  Use `CREATE <object_name>` to begin an object definition and `ADD <object_name>` to end it.
-    3.  Properties are assigned using `SET <property_name> : <value>`.
+    3.  Static Properties are assigned using `SET <property_name> : <value>`
+    4.  Dynamic Properties are assingned using `SET <property_name> : <value>, <date>`
     4.  References (links to other objects) use `REF <Object_Name> : <Referenced_Object_Name>`. The reference value must match the 'name' property of the target object.
     
     ###  SDDP Schema Constraints:
     You **MUST** adhere strictly to the mandatory properties defined in the schema below for every object you create.
-    
-    {sddp_schema} 
+    If a mandatory property starts with Ref, the object that cames with Ref must be creted before the current object (eg. while creating
+    a ThermalPlant, there is a RefFuel property, that means you MUST create FUEL object before). 
+
+    Properties: {properties}
+
+    ### CONTEXTUAL EXAMPLES (RAG/Few-Shot)
+    Use these examples of requests and their corresponding code to guide your response and ensure correct syntax:
+    {examples}
 
   # The User Prompt for the generation task, framing the user's input.
   generation_task_prompt:

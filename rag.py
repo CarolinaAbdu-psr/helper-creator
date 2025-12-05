@@ -1,11 +1,10 @@
-import json
 import argparse
 import yaml
 import sys
-
+import os
+import logging
 
 import datetime as dt
-import os
 from typing import (
     Tuple,
     List,
@@ -15,19 +14,17 @@ from typing import (
 )
 
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, BaseMessage
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_openai.chat_models.base import BaseChatOpenAI
 from langchain_anthropic import ChatAnthropic
-from typing import List, Dict, Any, Annotated, Tuple
-from typing_extensions import TypedDict
-import yaml
-import os
-import logging
+from langchain_chroma import Chroma
+import chromadb.config
 from dotenv import load_dotenv
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
+from typing_extensions import TypedDict
 
 load_dotenv()
 
@@ -39,18 +36,17 @@ REQUEST_TIMEOUT = 120
 MAX_TOKENS = 4096
 AGENTS_DIR = ""
 SDDP_AGENT_FILENAME = "agent.yaml" 
-SDDP_SCHEMA_FILENAME = "sddp_schema.yaml"
 
 # Global Variables (Loaded via load_sddp_agent_config)
 SYSTEM_PROMPT_TEMPLATE: str = ""
 USER_PROMPT_SCRIPT_GENERATION: str = ""
-SCHEMA_DATA: str = "" # The formatted SDDP Schema content (for injection)
+
 
 # --- CONFIGURATION LOADING ---
 
 def load_sddp_agent_config(filepath: str) -> bool:
     """Loads the templates and formats the schema content from the new YAML structure."""
-    global SYSTEM_PROMPT_TEMPLATE, USER_PROMPT_SCRIPT_GENERATION, SCHEMA_DATA
+    global SYSTEM_PROMPT_TEMPLATE, USER_PROMPT_SCRIPT_GENERATION
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             config = yaml.safe_load(file)
@@ -65,78 +61,158 @@ def load_sddp_agent_config(filepath: str) -> bool:
         logger.error(f"Error loading or parsing the SDDP agent config at {filepath}: {e}")
         return False
     
-def load_sddp_schema(filepath: str) -> bool:
-    """
-    Load sddp_schema.yaml data and save it on SCHEMA_DATA.
-    """
-    global SCHEMA_DATA
-    try:
-        with open(filepath, 'r', encoding='utf-8') as file:
-            schema_data_dict = yaml.safe_load(file)
-            
-        SCHEMA_DATA = yaml.dump(schema_data_dict, indent=2, default_flow_style=False, sort_keys=False)
-        
-        logger.info(f"SDDP Schema loaded and formatted successfully from {filepath}")
-        return True
-    except (FileNotFoundError, yaml.YAMLError) as e:
-        logger.error(f"Error loading or parsing the SDDP schema at {filepath}: {e}")
-        return False
-    except Exception as e:
-        logger.error(f"Unexpected error in load_sddp_schema: {e}")
-        return False
 
-# Function to load config once (Simulates agent initialization)
-def load_agents_config() -> Dict[str, Any]:
-    """Loads the SDDP agent templates (from agent.yaml) and the schema (from sddp_schema.yaml)."""
-    
-    # 1. Load Agent Prompts
-    agent_filepath = os.path.join(AGENTS_DIR, SDDP_AGENT_FILENAME)
-    if not os.path.exists(agent_filepath):
-        agent_filepath = SDDP_AGENT_FILENAME 
-        
-    config_loaded = load_sddp_agent_config(agent_filepath)
-    if not config_loaded:
-        return {'status': 'failed', 'reason': 'Agent Config Failed'}
-
-    # 2. Load SDDP Schema
-    schema_filepath = os.path.join(AGENTS_DIR, SDDP_SCHEMA_FILENAME)
-    # --- TEMPORARY FIX FOR DEMO: If directory doesn't exist, try local path ---
-    if not os.path.exists(schema_filepath):
-        schema_filepath = SDDP_SCHEMA_FILENAME # Try the current directory
-        
-    schema_loaded = load_sddp_schema(schema_filepath)
-    if not schema_loaded:
-        return {'status': 'failed', 'reason': 'Schema Load Failed'}
-    
-    # If both loaded successfully
-    return {'status': 'loaded'}
+def load_agent_config() -> Dict[str, Any]:
+    """Loads Text-to-Cypher agent configuration."""
+    filepath = os.path.join(AGENTS_DIR, SDDP_AGENT_FILENAME)
+    if load_sddp_agent_config(filepath):
+        return {'status': 'loaded'}
+    return {'status': 'failed'}
 
 # Load configuration once
-_AGENTS_CONFIG = load_agents_config()
+_AGENTS_CONFIG = load_agent_config()
 
-# --- LANGGRAPH STATE DEFINITION ---
+
+# -------------------------------------------------------
+# Functions to create State Nodes using LangGraph  
+#--------------------------------------------------------
 
 class GraphState(TypedDict):
     """Defines the state for the SDDP script generation workflow."""
     messages: Annotated[List[BaseMessage], add_messages]
     input: str        
-    schema: str     
+    examples: str
+    properties: str     
     sddp_script: str  
     chat_language: str
     agent_type: str
 
-# --- LANGGRAPH NODES ---
 
-def retrieve_schema(state: GraphState) -> Dict[str, Any]:
-    """
-    1. Retrieves the pre-loaded, formatted SDDP Schema data.
-    """
-    logger.info("Node: Retrieving Schema Context")
+# -------------------------------------------------------
+# Step 1 : Retrive Context 
+#--------------------------------------------------------
+def get_vectorstore_directory(doc_type: str) -> str:
+    return f'vectorstores/{doc_type}'
+
+def load_vectorstore(doc_type: str) -> Chroma:
+    """1.1. Loads the vectorstore with examples to use as context """
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     
-    return {
-        "schema": SCHEMA_DATA
-    }
+    persist_directory = get_vectorstore_directory(doc_type)
 
+    if os.path.exists(persist_directory):
+        return Chroma(
+            persist_directory=persist_directory,
+            embedding_function=embeddings,
+            client_settings=chromadb.config.Settings(anonymized_telemetry=False)
+        )
+    raise ValueError(f"Vectorstore not found : {persist_directory}")
+
+
+def format_contrastive_examples(docs: List) -> str:
+    """
+    Formats a list of retrieved documents into a context string
+    that includes both Correct and Incorrect Codes.
+    """
+    formatted_blocks = []
+    
+    for i, doc in enumerate(docs):
+        # 1. Get metadata
+        metadata = doc.metadata
+        
+        
+        # 3. Create example
+        block = f"""
+        ### EXample {i + 1}
+        Question: {doc.page_content}
+
+        CORRECT SINTAX (DO): ({metadata.get('correct_inst', 'N/A')})
+        ```python
+        {metadata.get('correct_code', 'N/A')}````
+
+        INCORRECT SINTAX (DON'T DO): ({metadata.get('incorrect_code', 'N/A')})"""
+
+        formatted_blocks.append(block.strip())
+        
+    return "\n\n" + "\n\n".join(formatted_blocks)
+
+def format_properties(docs: List) -> str:
+    """
+    Formats a list of retrieved documents into a context string
+    that includes availables properties
+    """
+    formatted_blocks = []
+    
+    available_objects = "The available objects to created with CREATE are the following: ACInterconnection, Area, Battery, Bus, BusShunt, Circuit, CircuitFlowConstraint, CSP, DCBus, DCLine, Demand, DemandSegment, Emission, FlowController, Fuel, FuelConsumption, FuelContract, FuelProducer, FuelReservoir, GasEmission, GasNode, GasPipeline, GenerationConstraint, GenericConstraint, HydroGenerator, HydroPlant, HydroPlantConnection, HydroStation, HydroStationConnection, Interconnection, InterpolationGenericConstraint, LCCConverter, LineReactor, Load, MTDCLink, PaymentSchedule, PowerInjection, RenewableCapacityProfile, RenewableGenerator, RenewablePlant, RenewableStation, RenewableTurbine, RenewableWindSpeedPoint, ReserveGeneration, ReservoirSet, SensitivityGroup, SeriesCapacitor, StaticVarCompensator, SumOfCircuits, SumOfInterconnections, SupplyChainDemand, SupplyChainDemandSegment, SupplyChainFixedConverter, SupplyChainFixedConverterCommodity, SupplyChainNode, SupplyChainProcess, SupplyChainProducer, SupplyChainStorage, SupplyChainTransport, SynchronousCompensator, System, TargetGeneration, ThermalCombinedCycle, ThermalGenerator, ThermalPlant, ThreeWindingsTransformer, Transformer, TransmissionLine, TwoTerminalDCLink, VSCConverter, Waterway, Zone"
+    
+    formatted_blocks.append(available_objects)
+
+    for i, doc in enumerate(docs):
+        # 1. Get metadata
+        metadata = doc.metadata
+        
+        # 2. Extract cypher examples
+        objct_name = doc.page_content
+        
+        # 3. Create example
+        block = f"""
+        Object: {objct_name}
+
+        Madatory properties to create {objct_name}: {metadata.get("mandatory")}
+
+        Reference properties : {metadata.get("references_objects")}
+
+        Static properties  : {metadata.get("static_properties")}
+
+        Dynamic properties  : {metadata.get("dynamic_properties")}
+        """
+
+        formatted_blocks.append(block.strip())
+        
+    return "\n\n" + "\n\n".join(formatted_blocks)
+
+def retrive_properties(state:GraphState)->Dict[str,Any]:
+    """
+    1.1 Get Factory Properties
+    """    
+    doc_type= f"properties"
+    vectorstore = load_vectorstore(doc_type)
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+    docs = retriever.invoke(state["input"])
+    properties_str = format_properties(docs)
+    print(properties_str)
+    return {"properties": properties_str}
+
+def retrive_examples(state:GraphState)->Dict[str,Any]:
+    """
+    1.2 Get Code examples
+    """
+    try: 
+        doc_type = "examples"
+        vectorstore = load_vectorstore(doc_type)
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+        docs = retriever.invoke(state["input"])
+        examples_str = format_contrastive_examples(docs)
+    except: 
+        examples_str = ""
+
+    print(examples_str)
+    return {"examples": examples_str}
+
+
+def retrieve_context(state: GraphState) -> Dict[str, Any]:
+    """
+    1.2. Get general context from documentation
+    """
+    properties = retrive_properties(state)
+    examples = retrive_examples(state)
+
+    return {"examples": examples, "properties":properties}
+
+
+# -------------------------------------------------------
+# Step 2 : Generate SDDP Script
+#--------------------------------------------------------
 
 def generate_sddp_script(state: GraphState, llm: BaseChatOpenAI) -> Dict[str, Any]:
     """
@@ -144,10 +220,10 @@ def generate_sddp_script(state: GraphState, llm: BaseChatOpenAI) -> Dict[str, An
     """
     logger.info("Node: Generating SDDP Script")
     
-    # 1. Augment System Prompt (Injection)
-    # Replaces the {sddp_schema} placeholder with the retrieved schema content
+    # 1.Replaces the {sddp_schema} placeholder with the retrieved schema content
     system_prompt_content = SYSTEM_PROMPT_TEMPLATE.format(
-        sddp_schema=state["schema"]
+        examples=state["examples"],
+        properties= state["properties"]
     )
     system_message = SystemMessage(content=system_prompt_content)
     
@@ -157,8 +233,7 @@ def generate_sddp_script(state: GraphState, llm: BaseChatOpenAI) -> Dict[str, An
     )
     human_message = HumanMessage(content=user_prompt_content)
 
-    # 3. Invoke LLM
-    # 
+    # 3. Invoke LLM 
     response = llm.invoke([system_message, human_message])
     
     sddp_script = response.content.strip()
@@ -184,13 +259,13 @@ def create_langgraph_workflow(llm: BaseChatOpenAI):
     workflow = StateGraph(GraphState)
     
     # 1. Retrieve Schema (Context Injection)
-    workflow.add_node("retrieve_schema", retrieve_schema) 
+    workflow.add_node("retrieve_context", retrieve_context) 
     # 2. Generate SDDP Script (LLM Execution)
     workflow.add_node("generate_sddp_script", generate_sddp_script_partial)
     
     # Defining the flow: Start -> Retrieve Schema -> Generate Script -> End
-    workflow.add_edge(START, "retrieve_schema")
-    workflow.add_edge("retrieve_schema", "generate_sddp_script")
+    workflow.add_edge(START, "retrieve_context")
+    workflow.add_edge("retrieve_context", "generate_sddp_script")
     workflow.add_edge("generate_sddp_script", END)
     
     memory = MemorySaver()
@@ -288,16 +363,19 @@ if __name__ == "__main__":
             raise Exception("Configuration load failed.")
 
         logger.info(f"SDDP Schema loaded from config file.")
+
+        # 2.Download latest RAG
+         
         
-        # 2. LangGraph Initialization
+        # 3. LangGraph Initialization
         chain, memory = initialize(model)
         logger.info(f"LangGraph Workflow and LLM initialized.")
 
-        # 3. Execution Configuration 
+        # 4. Execution Configuration 
         thread_id = "sddp-script-thread-1" 
         config = {"configurable": {"thread_id": thread_id}}
 
-        # 4. Workflow Execution (2 Steps: Retrieve Schema -> Generate Script)
+        # 5. Workflow Execution (2 Steps: Retrieve Schema -> Generate Script)
         logger.info("\n--- EXECUTING AGENT WORKFLOW ---")
         
         result = chain.invoke({
@@ -310,7 +388,7 @@ if __name__ == "__main__":
             final_script = result["sddp_script"]
             
             print("\n==============================================")
-            print("✅ FINAL SDDP SCRIPT GENERATED:")
+            print("FINAL SDDP SCRIPT GENERATED:")
             print(final_script)
             print("==============================================\n")
             

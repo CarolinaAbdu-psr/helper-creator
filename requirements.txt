@@ -9,3 +9,5 @@ dotenv
 langchain_core
 langchain_community
 jq
+boto3
+botocore
