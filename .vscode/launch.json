@@ -1,0 +1,52 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "RAG",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "rag.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-m", "gpt-4.1",
+                
+                "-q", "Create a sddp study with 3 thermal plants. Two of it should share the same fuel"
+            ]
+        },
+        {
+            "name": "Rag Generator - Examples",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "vectorstore_generator\\rag_generator.py",
+            "console": "integratedTerminal",
+            "args": [ "--path","vectorstore_generator\\docs\\examples","--output", "examples"]
+        },
+        {
+            "name": "Rag Generator - Properties ",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "vectorstore_generator\\rag_generator.py",
+            "console": "integratedTerminal",
+            "args": [ "--path","vectorstore_generator\\docs\\properties", "--output", "properties"]
+        },
+        {
+            "name": "Rag Uploader - Examples",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "vectorstore_generator\\rag_uploader.py",
+            "console": "integratedTerminal",
+            "args": ["examples"]
+        },
+        {
+            "name": "Rag Uploader - Properties",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "vectorstore_generator\\rag_uploader.py",
+            "console": "integratedTerminal",
+            "args": ["properties"]
+        }
+    ]
+}
