@@ -1,7 +1,5 @@
-import json
 import argparse
 import yaml
-import datetime as dt
 import os
 import operator
 from typing import Tuple, List, Annotated, Dict, Any
@@ -18,8 +16,6 @@ import chromadb.config
 from dotenv import load_dotenv
 
 from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langgraph.checkpoint.memory import MemorySaver
 from typing_extensions import TypedDict
 
 
@@ -36,8 +32,8 @@ REQUEST_TIMEOUT = 120
 MAX_TOKENS = 4096
 
 # Agent template settings
-AGENTS_DIR = "agent"
-AGENT_FILENAME = "agent.yaml"
+# single-agent config file at repository root
+AGENT_CONFIG_PATH = "agent.yaml"
 
 
 # -----------------------------
@@ -45,13 +41,40 @@ AGENT_FILENAME = "agent.yaml"
 # -----------------------------
 
 def load_agent_config(filepath: str) -> bool:
-    """Load prompts and templates from the agent YAML configuration."""
-    global SYSTEM_PROMPT_TEMPLATE
+    """Load prompts and templates from the agent YAML configuration.
+
+    Expected structure (agent.yaml):
+    prompts:
+      system_prompt_template: |
+        ...
+      prepare_prompt: |
+        ...
+      generation_task_prompt:
+        user_prompt_sddp_generation: |
+          ...
+    """
+    global SYSTEM_PROMPT_TEMPLATE, GENERATION_TASK_PROMPT, PREPARE_PROMPT
+    SYSTEM_PROMPT_TEMPLATE = None
+    GENERATION_TASK_PROMPT = None
+    PREPARE_PROMPT = None
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             config = yaml.safe_load(file)
 
-        SYSTEM_PROMPT_TEMPLATE = config['system_prompt_template']
+        prompts = config.get('prompts', {}) if isinstance(config, dict) else {}
+        # system prompt
+        SYSTEM_PROMPT_TEMPLATE = prompts.get('system_prompt_template') or prompts.get('system_prompt')
+        # prepare prompt (for the prepare step)
+        PREPARE_PROMPT = prompts.get('prepare_prompt')
+        # generation task prompt (nested mapping, for the execution step)
+        gen = prompts.get('generation_task_prompt') or {}
+        if isinstance(gen, dict):
+            GENERATION_TASK_PROMPT = gen.get('user_prompt_sddp_generation')
+        elif isinstance(gen, str):
+            GENERATION_TASK_PROMPT = gen
+
+        if not SYSTEM_PROMPT_TEMPLATE:
+            raise KeyError('system_prompt_template not found in agent config')
 
         logger.info(f"Agent template loaded successfully from {filepath}")
         return True
@@ -61,8 +84,8 @@ def load_agent_config(filepath: str) -> bool:
 
 
 def load_agents_config() -> Dict[str, Any]:
-    """Load agent configuration file."""
-    filepath = os.path.join(AGENTS_DIR, AGENT_FILENAME)
+    """Load agent configuration file from AGENT_CONFIG_PATH."""
+    filepath = AGENT_CONFIG_PATH
     if load_agent_config(filepath):
         return {'status': 'loaded'}
     return {'status': 'failed'}
@@ -78,22 +101,24 @@ class RAGAgent:
 
     def __init__(self, model, tools, system):
         self.system = system
-        # Bind tools to the model so it knows it can call them
         self.model = model.bind_tools(tools)
         self.tools = {t.name: t for t in tools}
 
         workflow = StateGraph(AgentState)
-        workflow.add_node()
+        # prepare: build a natural-language reference script (properties + examples)
+        workflow.add_node("prepare", self.prepare_reference)
         workflow.add_node("llm", self.call_llm)
-        workflow.add_node("retriver",self.take_action)
+        workflow.add_node("retriver", self.take_action)
 
+        # flow: prepare -> llm -> (if tool calls) retriver -> llm -> ...
+        workflow.add_edge('prepare', 'llm')
         workflow.add_conditional_edges(
             'llm',
             self.exists_action,
-            {True:'retriver',False: END}
+            {True: 'retriver', False: END}
         )
-        workflow.add_edge('retriver','llm')
-        workflow.set_entry_point('llm')
+        workflow.add_edge('retriver', 'llm')
+        workflow.set_entry_point('prepare')
         self.workflow = workflow.compile()
 
     def exists_action(self,state: AgentState):
@@ -106,6 +131,76 @@ class RAGAgent:
             messages = [SystemMessage(content=self.system)] + messages
         message = self.model.invoke(messages)  # AI response
         return {'messages': [message]}
+
+    def prepare_reference(self, state: AgentState):
+        """
+        Build a natural-language reference script the agent will use while invoking tools.
+        Uses external retriever functions (retrive_properties, retrive_examples)
+        to fetch RAG context, then invokes the LLM to generate a reference script
+        using PREPARE_PROMPT from agent.yaml.
+        
+        Returns: Both the reference script AND a follow-up prompt instructing the LLM
+        to execute the plan using tools (from GENERATION_TASK_PROMPT).
+        """
+        try:
+            # last user input
+            last_user_input = state['messages'][-1].content if state.get('messages') else ''
+
+            # Retrieve properties and examples using external retrievers
+            try:
+                vectorstore = load_vectorstore("properties")
+                retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
+                last_message_content = state["messages"][-1].content
+                docs = retriever.invoke(last_message_content)
+                properties_str = format_properties(docs)
+            except Exception as e:
+                logger.warning(f"Failed to retrieve properties: {e}")
+                properties_str = "(unable to load properties)"
+
+            try:
+                examples_dict = retrive_examples(state)
+                examples_str = examples_dict.get('examples', '(no examples found)')
+            except Exception as e:
+                logger.warning(f"Failed to retrieve examples: {e}")
+                examples_str = "(unable to load examples)"
+
+            # Use PREPARE_PROMPT from agent.yaml to ask the LLM to generate a reference script outline
+            if PREPARE_PROMPT:
+                # The prepare prompt asks the LLM to outline the case structure before executing
+                prompt = PREPARE_PROMPT
+            else:
+                # Fallback prompt if PREPARE_PROMPT is not loaded
+                prompt = (
+                    f"Based on the user's request below and the available SDDP objects/properties, "
+                    f"create a structured natural-language outline describing the case you will build.\n\n"
+                    f"User request: {last_user_input}\n\n"
+                    f"Include:\n"
+                    f"1. Objects to Create (object type, key properties)\n"
+                    f"2. Mandatory References (dependency order)\n"
+                    f"3. Property Assignments (static properties for each object)\n\n"
+                    f"Format as a clear, readable checklist for the LLM to follow step-by-step."
+                )
+
+            messages = [SystemMessage(content=self.system), HumanMessage(content=prompt)] if self.system else [HumanMessage(content=prompt)]
+            reference_script = self.model.invoke(messages)
+            
+            # Now prepare the execution phase: add a follow-up message with GENERATION_TASK_PROMPT
+            # This instructs the LLM to use the tools to implement the reference script
+            if GENERATION_TASK_PROMPT:
+                execution_prompt = GENERATION_TASK_PROMPT
+            else:
+                execution_prompt = (
+                    "You have prepared a natural-language reference script above. "
+                    "Now execute the case creation by invoking the available tools (create_objects, set_static_properties, etc.) "
+                    "following the plan you outlined."
+                )
+            
+            execution_message = HumanMessage(content=execution_prompt)
+            return {'messages': [reference_script, execution_message]}
+        except Exception as e:
+            logger.error(f"prepare_reference failed: {e}")
+            # fallback to empty message so workflow proceeds
+            return {'messages': [HumanMessage(content='(prepare_reference failed)')]} 
 
     def take_action(self, state: AgentState):
         tool_calls = state['messages'][-1].tool_calls  # use tools 
@@ -154,20 +249,69 @@ def initialize(model: str) :
 # -----------------------------
 # Retrive context
 # -----------------------------
+def get_vectorstore_directory(doc_type: str) -> str:
+    return f'vectorstores/{doc_type}'
 
-def load_vectorstore() -> Chroma:
-    """Load a Chroma vectorstore persisted in `vectorstore` directory."""
+def load_vectorstore(doc_type: str) -> Chroma:
+    """1.1. Loads the vectorstore with examples to use as context """
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    persist_directory = "vectorstore"
+    
+    persist_directory = get_vectorstore_directory(doc_type)
+
     if os.path.exists(persist_directory):
         return Chroma(
             persist_directory=persist_directory,
             embedding_function=embeddings,
             client_settings=chromadb.config.Settings(anonymized_telemetry=False)
         )
-    raise ValueError(f"Vectorstore not found: {persist_directory}")
+    raise ValueError(f"Vectorstore not found : {persist_directory}")
 
+# -----------------------------
+# Tools
+# -----------------------------
 
+def format_contrastive_examples(docs: List) -> str:
+    """
+    Formats a list of retrieved documents into a context string
+    that includes both Correct and Incorrect Codes.
+    """
+    formatted_blocks = []
+    
+    for i, doc in enumerate(docs):
+        # 1. Get metadata
+        metadata = doc.metadata
+        
+        
+        # 3. Create example
+        block = f"""
+        ### EXample {i + 1}
+        Question: {doc.page_content}
+
+        CORRECT SINTAX (DO): ({metadata.get('correct_inst', 'N/A')})
+        ```python
+        {metadata.get('correct_code', 'N/A')}````
+
+        INCORRECT SINTAX (DON'T DO): ({metadata.get('incorrect_code', 'N/A')})"""
+
+        formatted_blocks.append(block.strip())
+        
+    return "\n\n" + "\n\n".join(formatted_blocks)
+
+def retrive_examples(state:AgentState)->Dict[str,Any]:
+    """
+    1.2 Get Code examples
+    """
+    try: 
+        doc_type = "examples"
+        vectorstore = load_vectorstore(doc_type)
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+        docs = retriever.invoke(state["input"])
+        examples_str = format_contrastive_examples(docs)
+    except: 
+        examples_str = ""
+
+    print(examples_str)
+    return {"examples": examples_str}
 
 def format_properties(docs: List) -> str:
     """
@@ -204,26 +348,28 @@ def format_properties(docs: List) -> str:
         
     return "\n\n" + "\n\n".join(formatted_blocks)
 
-# -----------------------------
-# Tools
-# -----------------------------
-
 @tool
 def retrive_properties(state:AgentState)->str:
     """
     Retrieve detailed information about available object types and their properties from the SDDP study.
-    
-    Use this tool FIRST to understand:
-    - What object types exist (e.g., ThermalPlant, HydroPlant, Bus)
-    - What mandatory properties are needed to create each object
-    - What static properties can be accessed with tool get_static_property 
-    - What dynamic properties can be accessed 
-    - What reference properties link objects together
-    
+
+    Tool behavior:
+    - Input: `state` (AgentState) where `state['messages'][-1]` contains the user's query or context.
+    - Output: a single string containing a concise, machine-readable description of:
+      * mandatory properties for each relevant object type
+      * reference properties (names and expected target types)
+      * static and dynamic properties and how to set them
+
+    Usage guidance for the LLM (important):
+    - Call this tool BEFORE attempting to create objects.
+    - Use the property names and reference keys returned here EXACTLY when invoking
+      `create_objects` or `set_static_properties`.
+    - The returned text is formatted for programmatic consumption; prefer extracting
+      exact property names and examples rather than paraphrasing.
+
     Returns: Formatted documentation of available objects and their properties.
-    Use the property names returned here when calling other tools.
     """
-    vectorstore = load_vectorstore()
+    vectorstore = load_vectorstore("properties")
     retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
     last_message_content = state["messages"][-1].content
     docs = retriever.invoke(last_message_content)
@@ -308,6 +454,26 @@ def check_mandatory_refs(refs:Dict[str,list]):
 
 @tool 
 def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict[str,list]): 
+    """
+    Create a new study object in the SDDP `STUDY` graph.
+
+    Tool behavior:
+    - Inputs:
+      * `object_type` (str): the exact object type name (use values from `retrive_properties`).
+      * `name` (str): user-visible name.
+      * `id` (str): short identifier (2 chars max).
+      * `code` (int): numeric code (integer < 100).
+      * `refs` (Dict[str, list|int]): mapping of reference property names (the keys
+         as returned by `retrive_properties`, e.g. `RefPlants`, `RefFuel`) to a single
+         code or list of codes referencing existing objects.
+
+    - Output: A short string describing success or a clear error message.
+
+    Important for the LLM:
+    - Always call `retrive_properties` first to learn required property names and
+      reference keys. Provide `refs` using those keys exactly.
+    - If the tool returns an error string, the LLM should modify the input and retry.
+    """
     # Validate basic properties first
     basic_check = check_basic_properties(object_type, code, name, id)
     if basic_check is not True:
@@ -334,6 +500,8 @@ def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict[str,li
                 obj.set(reftype, codes)
             except Exception as e:
                 return f"Failed to set reference {reftype} on {object_type} (code={code}): {e}"
+            
+    STUDY.add(obj)
 
     return f"Created {object_type} with code={code} id={id}"
     
@@ -347,6 +515,21 @@ def check_object_exist(objtyppe,code):
 
 @tool 
 def set_static_properties(objtype, code, properties:Dict[str,Any]):
+    """
+    Set one or more static properties on an existing object.
+
+    Tool behavior:
+    - Inputs:
+      * `objtype` (str): exact object type name
+      * `code` (int): object code to find the existing object
+      * `properties` (Dict[str, Any]): mapping property_name -> value
+    - Validates object existence and that each property is static (not a dataframe).
+    - Returns a success message or a clear error string.
+
+    Usage guidance for the LLM:
+    - Use property names exactly as returned by `retrive_properties`.
+    - If a property is dynamic (time-series), call `set_dynamic_properties` instead.
+    """
     check_object_exist(objtype,code)
     obj = STUDY.find_by_code(objtype,code)[0]
     for prop, value in properties.items():
@@ -355,7 +538,25 @@ def set_static_properties(objtype, code, properties:Dict[str,Any]):
         if is_dataframe:
             return "Can't create dataframe with this function. Please use set_dynamic_properties"
         obj.set(prop, value)
-    pass
+    return f"Set static properties on {objtype} code={code}"
+
+@tool
+def save_study():
+    """
+    Persist the current `STUDY` to disk.
+
+    Tool behavior:
+    - No inputs.
+    - Side-effect: saves study to `./study_llm_test` (currently hard-coded).
+    - Output: success string or exception message.
+
+    Usage guidance for the LLM:
+    - Call this tool when all objects/properties have been created and you want to
+      persist the study.
+    """
+    study_path = "./study_llm_test"
+    psr.factory.save_study(study_path)
+    return "Study saved with success"
 
 
 
@@ -363,17 +564,17 @@ if __name__ == "__main__":
     import sys
     parser = argparse.ArgumentParser(description="RAG Agent - Translate questions to Cypher and answer them with RAG + auto-fix tools")
     parser.add_argument("-m", "--model", default="gpt-4.1", help="LLM model to be used. Default: gpt-4.1")
-    parser.add_argument("-s", "--study_path", required=True, help="Path to the study files required to load the graph schema into Neo4j.")
+    #parser.add_argument("-s", "--study_path", required=True, help="Path to the study files required to load the graph schema into Neo4j.")
     parser.add_argument("-q", "--query", required=True, help="Natural language question to be processed by the agent.")
     args = parser.parse_args()
     model = args.model
-    study_path = args.study_path
+    #study_path = args.study_path
     user_input = args.query
 
 
     logger.info("--- Starting RAG Agent ---")
     logger.info(f"Selected model: {model}")
-    logger.info(f"Study path: {study_path}")
+    #logger.info(f"Study path: {study_path}")
     logger.info(f"User question: {user_input}")
     try:
         global STUDY
@@ -383,8 +584,15 @@ if __name__ == "__main__":
         llm = initialize(model)
         logger.info("LLM initialized.")
         
-        tools = [retrive_properties]
-        
+        # Register available tools for the agent. Include all tool functions the
+        # LLM might call during the workflow.
+        tools = [
+            retrive_properties,
+            create_objects,
+            set_static_properties,
+            save_study,
+        ]
+
         # Initialize agent with system prompt and user query
         initial_message = HumanMessage(content=user_input)
         messages = [initial_message]
