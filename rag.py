@@ -301,17 +301,19 @@ def retrive_examples(state:AgentState)->Dict[str,Any]:
     """
     1.2 Get Code examples
     """
-    try: 
+    try:
         doc_type = "examples"
         vectorstore = load_vectorstore(doc_type)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
-        docs = retriever.invoke(state["input"])
+        # prefer explicit input, fallback to last message content
+        query = state.get("input") if isinstance(state, dict) and state.get("input") else state.get("messages", [])[-1].content
+        docs = retriever.invoke(query)
         examples_str = format_contrastive_examples(docs)
-    except: 
-        examples_str = ""
-
-    print(examples_str)
-    return {"examples": examples_str}
+        print(examples_str)
+        return {"examples": examples_str}
+    except Exception as e:
+        logger.exception("retrive_examples failed")
+        return {"examples": f"TOOL_ERROR: retrive_examples failed: {type(e).__name__}: {e}"}
 
 def format_properties(docs: List) -> str:
     """
@@ -369,12 +371,16 @@ def retrive_properties(state:AgentState)->str:
 
     Returns: Formatted documentation of available objects and their properties.
     """
-    vectorstore = load_vectorstore("properties")
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
-    last_message_content = state["messages"][-1].content
-    docs = retriever.invoke(last_message_content)
-    properties_str = format_properties(docs)
-    return properties_str
+    try:
+        vectorstore = load_vectorstore("properties")
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 6})
+        last_message_content = state["messages"][-1].content
+        docs = retriever.invoke(last_message_content)
+        properties_str = format_properties(docs)
+        return properties_str
+    except Exception as e:
+        logger.exception("retrive_properties failed")
+        return f"TOOL_ERROR: retrive_properties failed: {type(e).__name__}: {e}"
 
 
 def check_basic_properties(objtype, code, name, id):
@@ -428,8 +434,9 @@ def get_correspondent_objct_type(reftype:str):
         return reftype[3:]
     return reftype
 
-def check_mandatory_refs(refs:Dict[str,list]):
+def check_mandatory_refs(refs:Dict):
     # If there are no refs or empty dict, nothing to check
+    logger.debug(f"Checking mandatory references: {refs}")
     if not refs:
         return True
     for reftype, codes in refs.items():
@@ -453,7 +460,149 @@ def check_mandatory_refs(refs:Dict[str,list]):
     return True
 
 @tool 
-def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict[str,list]): 
+def required_references(object_type:str)->str:
+    """
+    Retrieve the mandatory refernces for a given object type.
+
+    Tool behavior:
+    - Input: `object_type` (str): the exact object type name.
+    - Output: A comma-separated string listing all mandatory references names for the specified object type.
+
+    Usage guidance for the LLM:
+    - Call this tool BEFORE attempting to create objects of the specified type.
+    - Use the exact property names returned here when invoking `create_objects`.
+    """
+    try:
+        obj = STUDY.create(object_type)
+        mandatory_props = []
+        desc = obj.descriptions()
+        for item in desc:
+            if obj.description(item).is_required() and obj.description(item).is_reference():
+                mandatory_props.append(item)
+        return ", ".join(mandatory_props)
+    except Exception as e:
+        logger.exception("required_properties failed")
+        return f"TOOL_ERROR: required_properties failed: {type(e).__name__}: {e}"
+    
+
+@tool 
+def get_available_object_types() -> str:
+    """
+    Retrieve a list of all available object types in the SDDP study.
+
+    Tool behavior:
+    - No inputs.
+    - Output: A comma-separated string listing all object type names.
+
+    Usage guidance for the LLM:
+    - Call this tool to discover which object types can be created or manipulated.
+    - Use the exact object type names returned here when invoking other tools.
+    """
+
+    try:
+        objects = [
+    "ACInterconnection",
+    "Area",
+    "Battery",
+    "Bus",
+    "BusShunt",
+    "CSP",
+    "CircuitFlowConstraint",
+    "DCBus",
+    "DCLine",
+    "Demand",
+    "DemandSegment",
+    "Emission",
+    "EnergyEfficiency",
+    "ExpansionAssociated",
+    "ExpansionCapacity",
+    "ExpansionDecision",
+    "ExpansionExclusive",
+    "ExpansionGenericConstraint",
+    "ExpansionPrecedence",
+    "ExpansionProject",
+    "ExpansionSatisfaction",
+    "FlowController",
+    "Fuel",
+    "FuelConsumption",
+    "FuelContract",
+    "FuelProducer",
+    "FuelReservoir",
+    "GasNode",
+    "GasNonThermalDemand",
+    "GasPipeline",
+    "GenerationConstraint",
+    "GenericConstraint",
+    "GenericVariable",
+    "HydroGenerator",
+    "HydroPlant",
+    "HydroPlantConnection",
+    "HydroStation",
+    "HydroStationConnection",
+    "Interconnection",
+    "InterpolationGenericConstraint",
+    "LCCConverter",
+    "LineReactor",
+    "Load",
+    "MTDCLink",
+    "Owner",
+    "Ownership",
+    "PSRElectrificationProducer",
+    "PaymentSchedule",
+    "PowerInjection",
+    "RenewableCapacityProfile",
+    "RenewableGenerator",
+    "RenewablePlant",
+    "RenewableStation",
+    "RenewableTurbine",
+    "RenewableWindSpeedPoint",
+    "ReserveGeneration",
+    "ReservoirSet",
+    "SensitivityGroup",
+    "SeriesCapacitor",
+    "StaticVarCompensator",
+    "SumOfCircuits",
+    "SumOfConstraints",
+    "SumOfInterconnections",
+    "SupplyChainDemand",
+    "SupplyChainDemandSegment",
+    "SupplyChainFixedConverter",
+    "SupplyChainFixedConverterCommodity",
+    "SupplyChainNode",
+    "SupplyChainProcess",
+    "SupplyChainProducer",
+    "SupplyChainStorage",
+    "SupplyChainTransport",
+    "SynchronousCompensator",
+    "System",
+    "TargetGeneration",
+    "ThermalCombinedCycle",
+    "ThermalGenerator",
+    "ThermalPlant",
+    "ThreeWindingsTransformer",
+    "Transformer",
+    "TransmissionLine",
+    "VSCConverter",
+    "Waterway",
+    "Zone"
+        ]
+        return ", ".join(objects)
+    except Exception as e:
+        logger.exception("get_available_object_types failed")
+        return f"TOOL_ERROR: get_available_object_types failed: {type(e).__name__}: {e}"
+
+@tool 
+def check_object_properties(objct_type:str):
+    """Returns the available properties for a given object type"""
+    try:
+        obj = STUDY.create(objct_type)
+        return obj.help()
+    except Exception as e:
+        logger.exception("check_object_properties failed")
+        return f"TOOL_ERROR: check_object_properties failed: {type(e).__name__}: {e}"
+
+@tool 
+def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict=None): 
     """
     Create a new study object in the SDDP `STUDY` graph.
 
@@ -465,7 +614,8 @@ def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict[str,li
       * `code` (int): numeric code (integer < 100).
       * `refs` (Dict[str, list|int]): mapping of reference property names (the keys
          as returned by `retrive_properties`, e.g. `RefPlants`, `RefFuel`) to a single
-         code or list of codes referencing existing objects.
+         code or list of codes referencing existing objects. The dict should be like 
+            `{ "RefPlants": [12, 15], "RefFuel": [3] }`.
 
     - Output: A short string describing success or a clear error message.
 
@@ -474,36 +624,36 @@ def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict[str,li
       reference keys. Provide `refs` using those keys exactly.
     - If the tool returns an error string, the LLM should modify the input and retry.
     """
-    # Validate basic properties first
-    basic_check = check_basic_properties(object_type, code, name, id)
-    if basic_check is not True:
-        return f"Basic property validation failed: {basic_check}"
-
-    # Validate referenced objects
-    refs_check = check_mandatory_refs(refs)
-    if refs_check is not True:
-        return f"Reference validation failed: {refs_check}"
-
-    # Create the object
     try:
+        # Validate basic properties first
+        basic_check = check_basic_properties(object_type, code, name, id)
+        if basic_check is not True:
+            return f"Basic property validation failed: {basic_check}"
+
+        # Validate referenced objects
+        refs_check = check_mandatory_refs(refs)
+        if refs_check is not True:
+            return f"Reference validation failed: {refs_check}"
+
+        # Create the object
         obj = STUDY.create(object_type)
         obj.name = name
         obj.code = code
         obj.id = id
+
+        # Set references if any
+        if refs:
+            for reftype, codes in refs.items():
+                try:
+                    obj.set(reftype, codes)
+                except Exception as e:
+                    return f"Failed to set reference {reftype} on {object_type} (code={code}): {e}"
+        
+        STUDY.add(obj)
+        return f"Created {object_type} with code={code} id={id}"
     except Exception as e:
-        return f"Failed to create object {object_type}: {e}"
-
-    # Set references if any
-    if refs:
-        for reftype, codes in refs.items():
-            try:
-                obj.set(reftype, codes)
-            except Exception as e:
-                return f"Failed to set reference {reftype} on {object_type} (code={code}): {e}"
-            
-    STUDY.add(obj)
-
-    return f"Created {object_type} with code={code} id={id}"
+        logger.exception("create_objects failed")
+        return f"TOOL_ERROR: create_objects failed: {type(e).__name__}: {e}"
     
 def check_object_exist(objtyppe,code):
     obj = STUDY.find_by_code(objtyppe,code)
@@ -511,6 +661,7 @@ def check_object_exist(objtyppe,code):
         return "Object of type and code doens't exists"
     
     return True
+
 
 
 @tool 
@@ -530,15 +681,21 @@ def set_static_properties(objtype, code, properties:Dict[str,Any]):
     - Use property names exactly as returned by `retrive_properties`.
     - If a property is dynamic (time-series), call `set_dynamic_properties` instead.
     """
-    check_object_exist(objtype,code)
-    obj = STUDY.find_by_code(objtype,code)[0]
-    for prop, value in properties.items():
-        description = obj.description(prop)
-        is_dataframe = description.is_dynamic() and len(description.dimensions()) > 0
-        if is_dataframe:
-            return "Can't create dataframe with this function. Please use set_dynamic_properties"
-        obj.set(prop, value)
-    return f"Set static properties on {objtype} code={code}"
+    try:
+        exist = check_object_exist(objtype,code)
+        if exist is not True:
+            return f"Object existence check failed: {exist}"
+        obj = STUDY.find_by_code(objtype,code)[0]
+        for prop, value in properties.items():
+            description = obj.description(prop)
+            is_dataframe = description.is_dynamic() and len(description.dimensions()) > 0
+            if is_dataframe:
+                return "Can't create dataframe with this function. Please use set_dynamic_properties"
+            obj.set(prop, value)
+        return f"Set static properties on {objtype} code={code}"
+    except Exception as e:
+        logger.exception("set_static_properties failed")
+        return f"TOOL_ERROR: set_static_properties failed: {type(e).__name__}: {e}"
 
 @tool
 def save_study():
@@ -554,9 +711,13 @@ def save_study():
     - Call this tool when all objects/properties have been created and you want to
       persist the study.
     """
-    study_path = "./study_llm_test"
-    psr.factory.save_study(study_path)
-    return "Study saved with success"
+    try:
+        study_path = "./study_llm_test"
+        psr.factory.save_study(study_path)
+        return "Study saved with success"
+    except Exception as e:
+        logger.exception("save_study failed")
+        return f"TOOL_ERROR: save_study failed: {type(e).__name__}: {e}"
 
 
 
@@ -579,6 +740,8 @@ if __name__ == "__main__":
     try:
         global STUDY
         STUDY = psr.factory.create_study()
+        system = STUDY.find("System")[0]
+        STUDY.remove(system)
         logger.info("Study loaded successfully.")
         
         llm = initialize(model)
@@ -587,7 +750,9 @@ if __name__ == "__main__":
         # Register available tools for the agent. Include all tool functions the
         # LLM might call during the workflow.
         tools = [
-            retrive_properties,
+            check_object_properties,
+            required_references,
+            get_available_object_types,
             create_objects,
             set_static_properties,
             save_study,
@@ -614,6 +779,11 @@ if __name__ == "__main__":
             print("==============================================\n")
         else:
             logger.warning("Workflow executed but no answer generated.")
+
+        study_path = "./study_llm_test"
+        psr.factory.save_study(study_path)
+        logger.info(f"Study saved successfully to {study_path}.")
+
     except Exception as e:
         logger.error("--- CRITICAL ERROR ---")
         logger.error(f"Error Detail: {type(e).__name__}: {str(e)}")

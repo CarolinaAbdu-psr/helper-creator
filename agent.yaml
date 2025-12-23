@@ -60,11 +60,18 @@ prompts:
       You have prepared a natural-language reference script describing the SDDP case structure.
       Now execute the case creation by invoking the available tools:
       
-      - **retrive_properties**: Get detailed property/reference info for object types
-      - **retrive_examples**: See example syntax and anti-patterns
+      - **check_object_properties**: Retrieve available properties for a given object type
+      - **get_available_object_types**: List all creatable SDDP object types
+      - **required_references**: List all references that must be set 
       - **create_objects**: Create study objects with mandatory properties and references
       - **set_static_properties**: Assign static property values
       - **save_study**: Persist the study to disk when complete
+
+      The recommend workflow is: 
+      get_available_object_types -> required_references -> create_objects -> check_object_properties
+      -> set_static_properties (repeat for all objects)
+
+      save_study
       
       User request: "{user_input}"
       
