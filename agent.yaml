@@ -53,21 +53,32 @@ prompts:
   generation_task_prompt:
     user_prompt_sddp_generation: |
       ### EXECUTION PHASE
-      You are now the Executor. Your goal is to materialize the Reference Script into a digital SDDP study using the provided Toolset.
+      You are now the SDDP Executor. Your goal is to materialize the Reference Script into a digital study by strictly following the tool protocols.
 
       ### REFERENCE SCRIPT TO IMPLEMENT
       {reference_script}
 
-      ### TOOLSET PROTOCOL
-      1. **Exploration**: Use `get_available_object_types` and `check_object_properties` to validate the schema for each object in the script.
-      2. **Dependency Check**: Use `required_references` to confirm you have all necessary IDs before creation.
-      3. **Creation**: Use `create_objects` with the mandatory data gathered.
-      4. **Modification**: Use `set_static_properties` for all auxiliary attributes defined in the script.
-      5. **Persistence**: You MUST call `save_study` at the very end to finalize the process.
+      ### TOOLSET PROTOCOL & SEQUENCE
+      For each object defined in the Reference Script, you MUST follow this precise order:
+
+      1. **Object Validation**: 
+         - Use `get_available_object_types` and `check_object_properties` to identify all mandatory and auxiliary attributes.
+      2. **Creation**: 
+         - Call `create_objects` to initialize the object in memory.
+         - If a property starts with "Ref" (e.g., RefPlants, RefFuel), you MUST first call `get_correspondent_objct_type` to identify the valid target types.
+         - Call `set_references` to link objects
+      3. **Attribute Assignment**: 
+         - Use `set_static_properties` for all fixed values defined in the script.
+      4. **Persistence**: 
+         - After ALL objects in the script have been added, call `save_study` to finalize the process.
+
+      ### HIERARCHICAL RULES
+      - **Dependencies First**: If Object A references Object B, you must complete the full sequence (Steps 1-3) for Object B before finishing Object A.
+      - **Ambiguity Resolution**: If `get_correspondent_objct_type` returns a list, select the specific type that best matches the context.
 
       ### ERROR HANDLING
-      - If a tool returns an "Object Not Found" or "Invalid Property" error, cross-reference with `check_object_properties` and correct your call.
-      - Do not skip steps. An SDDP case is only valid if all references are correctly linked.
+      - If a tool returns a `TOOL_ERROR`, analyze the message. If it's a missing dependency, create the missing object first.
+      - If a property is rejected, re-check `check_object_properties` for the exact spelling.
 
       ### USER INPUT CONTEXT
       "{user_input}"

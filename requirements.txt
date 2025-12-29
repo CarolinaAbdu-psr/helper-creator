@@ -11,3 +11,4 @@ langchain_community
 jq
 boto3
 botocore
+psr-factory

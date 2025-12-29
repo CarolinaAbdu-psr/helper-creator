@@ -176,18 +176,12 @@ class RAGAgent:
 
             messages = [system_message,human_message] 
             reference_script = self.model.invoke(messages)
+
+            logger.info(f"Script Generated : \n {reference_script.content}")
             
             # Now prepare the execution phase: add a follow-up message with GENERATION_TASK_PROMPT
             # This instructs the LLM to use the tools to implement the reference script
-            if GENERATION_TASK_PROMPT:
-                execution_prompt = GENERATION_TASK_PROMPT
-            else:
-                execution_prompt = (
-                    "You have prepared a natural-language reference script above. "
-                    "Now execute the case creation by invoking the available tools (create_objects, set_static_properties, etc.) "
-                    "following the plan you outlined."
-                )
-            
+            execution_prompt = GENERATION_TASK_PROMPT
             execution_message = HumanMessage(content=execution_prompt)
             return {'messages': [reference_script, execution_message]}
         except Exception as e:
@@ -393,7 +387,26 @@ def check_basic_properties(objtype, code, name, id):
 
     return True
 
+@tool 
 def get_correspondent_objct_type(reftype:str):
+    """
+    Maps an SDDP reference property name to its corresponding valid object type(s).
+    Use this tool whenever you encounter a property starting with 'Ref' and need to 
+    identify which object type must be created or searched for.
+
+    Args:
+        reftype (str): The name of the reference property found in the schema or script 
+                       (e.g., 'RefPlants', 'RefBus', 'RefCircuits').
+
+    Returns:
+        str | list: A single object type string or a list of possible valid object types.
+                    If a list is returned, you must determine the correct specific type 
+                    based on the context of the user's request.
+
+    Example:
+        - If 'RefPlants' is passed, it returns ['ThermalPlant', 'HydroPlant', 'RenewablePlant'].
+        - If 'RefBus' is passed, it returns 'Bus'.
+    """
     mapping = {
         "RefDemand": "Demand",
         "RefBus": "Bus",
@@ -432,24 +445,19 @@ def check_mandatory_refs(refs:Dict):
     logger.debug(f"Checking mandatory references: {refs}")
     if not refs:
         return True
-    for reftype, codes in refs.items():
-        objtypes = get_correspondent_objct_type(reftype)
-        # normalize to list of candidate types
-        candidates = objtypes if isinstance(objtypes, (list, tuple)) else [objtypes]
-        # allow single int or list of codes
-        if codes is None:
-            return f"Reference {reftype} provided without codes"
-        codes = codes if isinstance(codes, (list, tuple)) else [codes]
-        for code in codes:
-            # check if any candidate type has the object with given code
-            found = False
-            for candidate in candidates:
-                objs = STUDY.find_by_code(candidate, code)
-                if len(objs) > 0:
-                    found = True
-                    break
-            if not found:
-                return f"Referenced object not found: type_candidates={candidates}, code={code}"
+    if refs: 
+        for ref_type, items in refs.items():
+            if not isinstance(items,list):
+                logger.info("TOOL_ERROR: 'refs' values must be lists of tuples (ObjType, code).")
+                return "TOOL_ERROR: 'refs' values must be lists of tuples (ObjType, code)."
+            for item in items: 
+                if not(isinstance(item,tuple) or (isinstance(item,list) and len(item)==2)):
+                    print(item,not isinstance(item,tuple), not (isinstance(item,list) and len(item)==2) )
+                    print("TOOL_ERROR: Each item in the list must be a (Type, Code) pair.")
+                    return "TOOL_ERROR: Each item in the list must be a (Type, Code) pair."
+                
+                if len(STUDY.find_by_code(item[0], item[1])) == 0 :
+                    return f"Referenced object not found: type_candidates={item[0]}, code={item[1]}"
     return True
 
 @tool 
@@ -594,28 +602,65 @@ def check_object_properties(objct_type:str):
         logger.exception("check_object_properties failed")
         return f"TOOL_ERROR: check_object_properties failed: {type(e).__name__}: {e}"
 
+
+def set_references(obj, ref_name:str, ref_obj_type:str,  ref_code:int):
+    """
+    Establishes a logical link between two SDDP objects. 
+    Crucial for defining dependencies like linking a ThermalPlant to its Fuel.
+
+    Args:
+        obj_type (str): The type of the parent object receiving the reference (e.g., 'ThermalPlant').
+        obj_code (int): The unique code of the parent object.
+        ref_name (str): The property name of the reference (e.g., 'RefFuel' or 'RefFuels').
+        ref_obj_type (str): The type of the object being referenced. 
+                           Use 'get_correspondent_objct_type' to find the correct type.
+        ref_code (int): The unique code of the object to be referenced.
+
+    Returns:
+        str: A success message or an error description if the link fails.
+    """
+    
+    try:
+        atual_refs = obj.get(ref_name)
+
+        ref_obj = STUDY.find_by_code(ref_obj_type,ref_code)[0]
+
+        if atual_refs is None: 
+            if ref_obj_type.endswith("s") and not ref_obj_type=="RefBus": 
+                atual_refs = []
+            else :
+                atual_refs=ref_obj
+
+        if isinstance(atual_refs,list):
+            atual_refs.append(ref_obj)
+            obj.set(ref_name,atual_refs)
+        
+        else: 
+            obj.set(ref_name, atual_refs)
+
+    except Exception as e:
+        logger.warning(f"Failed to set reference {ref_name}({ref_obj_type}) on {obj.type} (code={obj.code}): {e}")
+        return f"Failed to set reference {ref_name}({ref_obj_type}) on {obj.type} (code={obj.code}): {e}"
+    
+
 @tool 
 def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict=None): 
     """
-    Create a new study object in the SDDP `STUDY` graph.
+    Initializes and adds a new object to the SDDP STUDY. This is the primary creation tool.
 
-    Tool behavior:
-    - Inputs:
-      * `object_type` (str): the exact object type name (use values from `retrive_properties`).
-      * `name` (str): user-visible name.
-      * `id` (str): short identifier (2 chars max).
-      * `code` (int): numeric code (integer < 100).
-      * `refs` (Dict[str, list|int]): mapping of reference property names (the keys
-         as returned by `retrive_properties`, e.g. `RefPlants`, `RefFuel`) to a single
-         code or list of codes referencing existing objects. The dict should be like 
-            `{ "RefPlants": [12, 15], "RefFuel": [3] }`.
+    Args:
+        object_type (str): The exact class name (e.g., 'ThermalPlant').
+        name (str): The full name of the object.
+        id (str): A 2-character short identifier.
+        code (int): A unique numeric integer code.
+        refs (Dict[str, List[Tuple[str, int]]], optional): A dictionary where:
+            - Key: The reference property name (e.g., "RefFuels", "RefBus").
+            - Value: A LIST of Tuples, where each tuple is (TargetObjectType, TargetCode).
+            Example: { "RefFuels": [("Fuel", 1)], "RefBuses": [("Bus", 10), ("Bus", 11)] }
+            Note: Even for a single reference, the value MUST be a list containing one tuple.
 
-    - Output: A short string describing success or a clear error message.
-
-    Important for the LLM:
-    - Always call `retrive_properties` first to learn required property names and
-      reference keys. Provide `refs` using those keys exactly.
-    - If the tool returns an error string, the LLM should modify the input and retry.
+    Returns:
+        str: Success message or a TOOL_ERROR.
     """
     try:
         # Validate basic properties first
@@ -634,32 +679,29 @@ def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict=None):
         obj.code = code
         obj.id = id
 
-        # Set references if any
-        if refs:
-            for reftype, codes in refs.items():
-                try:
-                    ref_objs = []
-                    ref_obj_type = get_correspondent_objct_type(reftype)
-                    for code in codes: 
-                        ref_obj = STUDY.find_by_code(ref_obj_type,code)[0]
-                        ref_objs.append(ref_obj)
-                    if len(ref_objs) < 1: 
-                        continue
-                    elif len(ref_objs) < 2:
-                        obj.set(reftype, ref_objs[0])
-                    else:
-                        obj.set(reftype, ref_objs)
-                except Exception as e:
-                    logger.warning(f"Failed to set reference {reftype} on {object_type} (code={code}): {e}")
-                    return f"Failed to set reference {reftype} on {object_type} (code={code}): {e}"
-        
+        if refs: 
+            logger.info(f"Setting References for {refs}")
+            for ref_type, items in refs.items():
+                logger.info(ref_type,items)
+                if not isinstance(items,list):
+                    logger.info("TOOL_ERROR: 'refs' values must be lists of tuples (ObjType, code).")
+                    return "TOOL_ERROR: 'refs' values must be lists of tuples (ObjType, code)."
+                for item in items: 
+                    print(obj)
+                    set_references(obj,ref_type,item[0],item[1])
+                    
+
         STUDY.add(obj)
-        logger.info(f"Created {object_type} with code={code} id={id}")
-        return f"Created {object_type} with code={code} id={id}"
+
+        logger.info(f"Object {obj} created with success")
+        return f"Object {obj} created with success"
+                
+
     except Exception as e:
-        logger.exception("create_objects failed")
+        logger.exception(f"TOOL_ERROR: create_objects failed: {type(e).__name__}: {e}")
         return f"TOOL_ERROR: create_objects failed: {type(e).__name__}: {e}"
     
+
 def check_object_exist(objtyppe,code):
     obj = STUDY.find_by_code(objtyppe,code)
     if len(obj)==0 :
@@ -757,6 +799,7 @@ if __name__ == "__main__":
         tools = [
             check_object_properties,
             required_references,
+            get_correspondent_objct_type,
             get_available_object_types,
             create_objects,
             set_static_properties,
