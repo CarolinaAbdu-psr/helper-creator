@@ -164,24 +164,17 @@ class RAGAgent:
                 logger.warning(f"Failed to retrieve examples: {e}")
                 examples_str = "(unable to load examples)"
 
-            # Use PREPARE_PROMPT from agent.yaml to ask the LLM to generate a reference script outline
-            if PREPARE_PROMPT:
-                # The prepare prompt asks the LLM to outline the case structure before executing
-                prompt = PREPARE_PROMPT
-            else:
-                # Fallback prompt if PREPARE_PROMPT is not loaded
-                prompt = (
-                    f"Based on the user's request below and the available SDDP objects/properties, "
-                    f"create a structured natural-language outline describing the case you will build.\n\n"
-                    f"User request: {last_user_input}\n\n"
-                    f"Include:\n"
-                    f"1. Objects to Create (object type, key properties)\n"
-                    f"2. Mandatory References (dependency order)\n"
-                    f"3. Property Assignments (static properties for each object)\n\n"
-                    f"Format as a clear, readable checklist for the LLM to follow step-by-step."
-                )
+            prompt = PREPARE_PROMPT
 
-            messages = [SystemMessage(content=self.system), HumanMessage(content=prompt)] if self.system else [HumanMessage(content=prompt)]
+            system_message = SystemMessage(content=self.system)
+            user_prompt_content = prompt.format(
+                input=last_user_input,
+                properties=properties_str,
+                examples = examples_str)
+
+            human_message = HumanMessage(content=user_prompt_content)
+
+            messages = [system_message,human_message] 
             reference_script = self.model.invoke(messages)
             
             # Now prepare the execution phase: add a follow-up message with GENERATION_TASK_PROMPT
@@ -645,11 +638,23 @@ def create_objects(object_type:str, name:str, id:str, code:int, refs:Dict=None):
         if refs:
             for reftype, codes in refs.items():
                 try:
-                    obj.set(reftype, codes)
+                    ref_objs = []
+                    ref_obj_type = get_correspondent_objct_type(reftype)
+                    for code in codes: 
+                        ref_obj = STUDY.find_by_code(ref_obj_type,code)[0]
+                        ref_objs.append(ref_obj)
+                    if len(ref_objs) < 1: 
+                        continue
+                    elif len(ref_objs) < 2:
+                        obj.set(reftype, ref_objs[0])
+                    else:
+                        obj.set(reftype, ref_objs)
                 except Exception as e:
+                    logger.warning(f"Failed to set reference {reftype} on {object_type} (code={code}): {e}")
                     return f"Failed to set reference {reftype} on {object_type} (code={code}): {e}"
         
         STUDY.add(obj)
+        logger.info(f"Created {object_type} with code={code} id={id}")
         return f"Created {object_type} with code={code} id={id}"
     except Exception as e:
         logger.exception("create_objects failed")
@@ -661,7 +666,6 @@ def check_object_exist(objtyppe,code):
         return "Object of type and code doens't exists"
     
     return True
-
 
 
 @tool 
@@ -714,6 +718,7 @@ def save_study():
     try:
         study_path = "./study_llm_test"
         psr.factory.save_study(study_path)
+        logger.info("Study saved with success")
         return "Study saved with success"
     except Exception as e:
         logger.exception("save_study failed")
