@@ -11,7 +11,7 @@ class ScriptInterpreter:
         """
         self.study = study
         self.current_object = None
-        self.objects_registry = {}  # Armazena objetos criados por nome
+        self.objects_registry = {}  # Name : objtype
         
     def parse_and_execute(self, script):
         """
