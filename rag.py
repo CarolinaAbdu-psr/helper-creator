@@ -391,6 +391,9 @@ if __name__ == "__main__":
             print("FINAL SDDP SCRIPT GENERATED:")
             print(final_script)
             print("==============================================\n")
+
+            with open('script.txt', 'w', encoding='utf-8') as script:
+                script.write(final_script)
             
         else:
             logger.warning("The workflow was executed, but no SDDP script was generated.")
