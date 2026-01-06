@@ -17,9 +17,12 @@ prompts:
     ###  Scripting Rules:
     1.  Start every script with `CREATE_STUDY` and end with `SAVE_STUDY`.
     2.  Use `CREATE <object_name>` to begin an object definition and `ADD <object_name>` to end it.
-    3.  Static Properties are assigned using `SET <property_name> : <value>`
-    4.  Dynamic Properties are assingned using `SET <property_name> : <value>, <date>`
-    4.  References (links to other objects) use `REF <Object_Name> : <Referenced_Object_Name>`. The reference value must match the 'name' property of the target object.
+    3.  Use `NAME <name>`to set the name property to the object (Maximum of 12 characters)
+    4.  Use `CODE <code>`to set the code property to the object (Int)
+    5.  Use `ID <id>` to set the id property to the object (Maximum of 2 lower characters)
+    6.  Static Properties are assigned using `SET <property_name> : <value>`
+    7.  Dynamic Properties are assingned using `SET <property_name> : <value>, <date>`
+    8.  References (links to other objects) use `REF <Object_Name> : <Referenced_Object_Name>`. The reference value must match the 'name' property of the target object.
     
     ###  SDDP Schema Constraints:
     You **MUST** adhere strictly to the mandatory properties defined in the schema below for every object you create.

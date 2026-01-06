@@ -80,19 +80,28 @@ class ScriptInterpreter:
         """
         Add name to the object if required 
         """
-        self.current_object.name = str(name)
+        try:
+            self.current_object.name = str(name)
+        except:
+            pass
 
     def _set_code(self,code):
         """
         Add code to the object if required 
         """
-        self.current_object.code = int(code)
+        try:
+            self.current_object.code = int(code)
+        except: 
+            pass
 
     def _set_id(self,id):
         """
         Add id to the object if required 
         """
-        self.current_object.id = str(id)
+        try:
+            self.current_object.id = str(id)
+        except:
+            pass
 
     def _set_property(self, args):
         """
@@ -114,8 +123,9 @@ class ScriptInterpreter:
         
         self.current_object.set(prop_name, prop_value)
         print(f"  SET {prop_name} = {prop_value}")
-        
-    
+         
+
+
     def _set_reference(self, args):
         """
         Executa REF RefProperty : ReferencedObjectName
@@ -137,8 +147,18 @@ class ScriptInterpreter:
         # Busca o objeto referenciado no registro
         if target_name in self.objects_registry.keys():
             referenced_object = self.study.find_by_name(self.objects_registry[target_name],target_name)[0]
-            self.current_object.set(ref_name, referenced_object)
-            print(f"  REF {ref_name} -> {target_name}")
+            print(referenced_object)
+            try: 
+                self.current_object.set(ref_name, referenced_object)
+                print(f"  REF {ref_name} -> {target_name}")
+            except: 
+                ref_list = self.current_object.get(ref_name)
+                if ref_list:
+                    ref_list.append(referenced_object)
+                else: 
+                    ref_list = [referenced_object]
+                self.current_object.set(ref_name, ref_list)
+
         else:
             print(f"Erro: Objeto '{target_name}' não encontrado no registro")
     
